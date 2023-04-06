@@ -24,7 +24,7 @@ class _AddPlayerState extends State<AddPlayer> {
             elevation: 0,
             centerTitle: true,
             title: Text(
-              'Add Player ',
+              'Add Players ',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w100,
