@@ -1,9 +1,14 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:dhkhapp/addPlayer.dart';
 import 'package:dhkhapp/playersList.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 
 class HomeAdmin extends StatefulWidget {
   const HomeAdmin({super.key});
@@ -13,8 +18,10 @@ class HomeAdmin extends StatefulWidget {
 }
 
 class _HomeAdminState extends State<HomeAdmin> {
-  int _homeScore = 0;
-  int _awayScore = 0;
+  int _homeScore = 0, _awayScore = 0;
+  String _awayName = "-", _image_64 = "", _imagePath = "";
+
+  final picker = ImagePicker();
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -323,8 +330,40 @@ class _HomeAdminState extends State<HomeAdmin> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               InkWell(
-                                onTap: () {
+                                onTap: () async {
                                   // get photo from gallery
+                                  final piickedFile = await picker.pickImage(
+                                      source: ImageSource.gallery);
+                                  if (piickedFile != null) {
+                                    File? croppedFile =
+                                        await ImageCropper().cropImage(
+                                      sourcePath: piickedFile.path,
+                                      aspectRatioPresets: [
+                                        CropAspectRatioPreset.square,
+                                        CropAspectRatioPreset.ratio3x2,
+                                        CropAspectRatioPreset.original,
+                                        CropAspectRatioPreset.ratio4x3,
+                                        CropAspectRatioPreset.ratio16x9
+                                      ],
+                                      androidUiSettings:
+                                          const AndroidUiSettings(
+                                        toolbarColor:
+                                            Color.fromARGB(255, 6, 0, 85),
+                                        toolbarTitle: 'Edit Photo',
+                                        toolbarWidgetColor: Colors.white,
+                                        activeControlsWidgetColor:
+                                            Colors.redAccent,
+                                        backgroundColor: Colors.grey,
+                                      ),
+                                    );
+                                    if (croppedFile != null) {
+                                      setState(() {
+                                        _image_64 = imageToBase64(croppedFile);
+                                        _imagePath = croppedFile.path;
+                                      });
+                                      Navigator.pop(context);
+                                    }
+                                  }
                                 },
                                 child: Container(
                                   width: 65.r,
@@ -335,21 +374,104 @@ class _HomeAdminState extends State<HomeAdmin> {
                                       color: const Color(0xFF000B46),
                                       borderRadius:
                                           BorderRadius.circular(1000)),
-                                  child: const Icon(
-                                    Icons.camera_alt,
-                                    color: Colors.white,
-                                  ),
+                                  child: _imagePath != ""
+                                      ? Image.file(File(_imagePath))
+                                      : const Icon(
+                                          Icons.camera_alt,
+                                          color: Colors.white,
+                                        ),
                                 ),
                               ),
                               SizedBox(
                                 height: 5.h,
                               ),
-                              Text(
-                                '-',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'Inter',
-                                  fontSize: 15.sp,
+                              InkWell(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return Dialog(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12.r),
+                                        ),
+                                        child: Container(
+                                          width: 200.r,
+                                          height: 100.r,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF000B46),
+                                            border: Border.all(
+                                              color: Colors.white,
+                                              width: 1,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(12.r),
+                                          ),
+                                          child: Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 40.r),
+                                            child: TextFormField(
+                                              textAlign: TextAlign.center,
+                                              textInputAction:
+                                                  TextInputAction.done,
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontFamily: 'Inter',
+                                                fontSize: 26.sp,
+                                              ),
+                                              decoration: InputDecoration(
+                                                  fillColor: Colors.transparent,
+                                                  filled: true,
+                                                  enabledBorder:
+                                                      const UnderlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        color: Colors.white,
+                                                        width: 1),
+                                                  ),
+                                                  focusedBorder:
+                                                      const UnderlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        color: Colors.white,
+                                                        width: 2),
+                                                  ),
+                                                  labelText: 'team name',
+                                                  labelStyle: TextStyle(
+                                                    fontFamily: 'Inter',
+                                                    fontSize: 20.sp,
+                                                    color: Colors.white
+                                                        .withOpacity(0.5),
+                                                  )),
+                                              onChanged: (val) {
+                                                setState(() {
+                                                  if (val != "") {
+                                                    _awayName = (val);
+                                                  } else {
+                                                    _awayName = "-";
+                                                  }
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  height: 20.r,
+                                  width: 60.r,
+                                  child: FittedBox(
+                                    fit: BoxFit.fitWidth,
+                                    child: Text(
+                                      _awayName,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: 'Inter',
+                                        fontSize: 15.sp,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
@@ -365,5 +487,11 @@ class _HomeAdminState extends State<HomeAdmin> {
         ),
       ),
     );
+  }
+
+  String imageToBase64(File? image) {
+    List<int> imageBytes = image!.readAsBytesSync();
+    String base64Image = base64Encode(imageBytes);
+    return base64Image;
   }
 }
