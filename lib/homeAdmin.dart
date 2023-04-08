@@ -20,6 +20,7 @@ class HomeAdmin extends StatefulWidget {
 class _HomeAdminState extends State<HomeAdmin> {
   int _homeScore = 0, _awayScore = 0;
   String _awayName = "-", _image_64 = "", _imagePath = "";
+  bool _changed = false;
 
   final picker = ImagePicker();
   @override
@@ -40,7 +41,8 @@ class _HomeAdminState extends State<HomeAdmin> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const AddPlayer()));
+                              builder: (context) =>
+                                  const AddPlayer(title: 'Add new Player')));
                     },
                     child: const Icon(
                       Icons.add,
@@ -208,14 +210,30 @@ class _HomeAdminState extends State<HomeAdmin> {
                     SizedBox(
                       height: 50.h,
                     ),
-                    Text(
-                      'Match',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'Inter',
-                        fontSize: 20.sp,
-                      ),
-                    ),
+                    _changed
+                        ? InkWell(
+                            onTap: () {
+                              setState(() {
+                                _changed = false;
+                              });
+                            },
+                            child: Text(
+                              'Save Changes',
+                              style: TextStyle(
+                                color: const Color.fromARGB(255, 216, 89, 89),
+                                fontFamily: 'Inter',
+                                fontSize: 20.sp,
+                              ),
+                            ),
+                          )
+                        : Text(
+                            'Match',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'Inter',
+                              fontSize: 20.sp,
+                            ),
+                          ),
                     SizedBox(
                       height: 10.h,
                     ),
@@ -226,7 +244,9 @@ class _HomeAdminState extends State<HomeAdmin> {
                           color: const Color(0xFF12136B),
                           borderRadius: BorderRadius.circular(10.r),
                           border: Border.all(
-                            color: Colors.white,
+                            color: _changed
+                                ? const Color.fromARGB(255, 216, 89, 89)
+                                : Colors.white,
                             width: 1,
                           )),
                       child: Row(
@@ -264,6 +284,7 @@ class _HomeAdminState extends State<HomeAdmin> {
                           SizedBox(width: 30.w),
                           InkWell(
                             onTap: () {
+                              _changed = true;
                               if (_homeScore < 9) {
                                 setState(() {
                                   _homeScore++;
@@ -275,6 +296,7 @@ class _HomeAdminState extends State<HomeAdmin> {
                               }
                             },
                             onLongPress: () {
+                              _changed = true;
                               setState(() {
                                 _homeScore = 0;
                               });
@@ -300,6 +322,7 @@ class _HomeAdminState extends State<HomeAdmin> {
                           ),
                           InkWell(
                             onTap: () {
+                              _changed = true;
                               if (_awayScore < 9) {
                                 setState(() {
                                   _awayScore++;
@@ -311,6 +334,7 @@ class _HomeAdminState extends State<HomeAdmin> {
                               }
                             },
                             onLongPress: () {
+                              _changed = true;
                               setState(() {
                                 _awayScore = 0;
                               });
@@ -353,15 +377,16 @@ class _HomeAdminState extends State<HomeAdmin> {
                                         toolbarWidgetColor: Colors.white,
                                         activeControlsWidgetColor:
                                             Colors.redAccent,
-                                        backgroundColor: Colors.grey,
+                                        backgroundColor:
+                                            Color.fromARGB(255, 44, 44, 44),
                                       ),
                                     );
                                     if (croppedFile != null) {
                                       setState(() {
-                                        _image_64 = imageToBase64(croppedFile);
+                                        //_image_64 = imageToBase64(croppedFile);
                                         _imagePath = croppedFile.path;
+                                        _changed = true;
                                       });
-                                      Navigator.pop(context);
                                     }
                                   }
                                 },
@@ -375,7 +400,11 @@ class _HomeAdminState extends State<HomeAdmin> {
                                       borderRadius:
                                           BorderRadius.circular(1000)),
                                   child: _imagePath != ""
-                                      ? Image.file(File(_imagePath))
+                                      ? ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(1000),
+                                          child: Image.file(File(_imagePath)),
+                                        )
                                       : const Icon(
                                           Icons.camera_alt,
                                           color: Colors.white,
@@ -445,8 +474,10 @@ class _HomeAdminState extends State<HomeAdmin> {
                                                 setState(() {
                                                   if (val != "") {
                                                     _awayName = (val);
+                                                    _changed = true;
                                                   } else {
                                                     _awayName = "-";
+                                                    _changed = true;
                                                   }
                                                 });
                                               },

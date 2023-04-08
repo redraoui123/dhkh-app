@@ -120,7 +120,9 @@ class _PLayersListState extends State<PLayersList> {
                           ? Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const AddPlayer()))
+                                  builder: (context) => const AddPlayer(
+                                        title: 'Player Details',
+                                      )))
                           : 0;
                     },
                     child: Icon(
@@ -200,103 +202,114 @@ class _PLayersListState extends State<PLayersList> {
                                 right: 20.r,
                                 left: 20.r,
                               ),
-                              child: Container(
-                                height: 250.h,
-                                width: 160.w,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF051152),
-                                  border:
-                                      Border.all(color: Colors.white, width: 1),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Stack(
-                                  children: [
-                                    Align(
-                                      alignment: Alignment.center,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: Image.asset(
-                                          e.profilePicture.toString(),
-                                          fit: BoxFit.cover,
-                                          height: 250.h,
-                                          width: 180.w,
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.center,
-                                      child: Container(
-                                        height: 250.h,
-                                        width: 160.w,
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                              colors: [
-                                                const Color(0xFF010B40)
-                                                    .withOpacity(.22),
-                                                const Color(0xFF010B40),
-                                              ],
-                                              begin: Alignment.topCenter,
-                                              end: Alignment.bottomCenter,
-                                              stops: const [0.6, 1.5]),
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => const AddPlayer(
+                                                title: 'Player Details',
+                                              )));
+                                },
+                                child: Container(
+                                  height: 250.h,
+                                  width: 160.w,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF051152),
+                                    border: Border.all(
+                                        color: Colors.white, width: 1),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Stack(
+                                    children: [
+                                      Align(
+                                        alignment: Alignment.center,
+                                        child: ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(10),
+                                          child: Image.asset(
+                                            e.profilePicture.toString(),
+                                            fit: BoxFit.cover,
+                                            height: 250.h,
+                                            width: 180.w,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.bottomCenter,
-                                      child: Padding(
-                                        padding: EdgeInsets.only(
-                                            bottom: 10.r,
-                                            left: 10.r,
-                                            right: 10.r),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            Container(
-                                              alignment: Alignment.centerLeft,
-                                              child: Text(
-                                                e.fullName.toString(),
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontFamily: 'Inter',
-                                                  fontSize: 17.sp,
-                                                ),
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              height: 5.r,
-                                            ),
-                                            Row(
-                                              children: [
-                                                Expanded(
-                                                  child: Text(
-                                                    '${e.images_list.length} photos',
-                                                    style: TextStyle(
-                                                      color: Colors.white
-                                                          .withOpacity(0.7),
-                                                      fontFamily: 'Inter',
-                                                      fontSize: 17.sp,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Text(
-                                                  '${e.toPay} dhs',
+                                      Align(
+                                        alignment: Alignment.center,
+                                        child: Container(
+                                          height: 250.h,
+                                          width: 160.w,
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                                colors: [
+                                                  const Color(0xFF010B40)
+                                                      .withOpacity(.22),
+                                                  const Color(0xFF010B40),
+                                                ],
+                                                begin: Alignment.topCenter,
+                                                end: Alignment.bottomCenter,
+                                                stops: const [0.6, 1.5]),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                      ),
+                                      Align(
+                                        alignment: Alignment.bottomCenter,
+                                        child: Padding(
+                                          padding: EdgeInsets.only(
+                                              bottom: 10.r,
+                                              left: 10.r,
+                                              right: 10.r),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                            children: [
+                                              Container(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  e.fullName.toString(),
                                                   style: TextStyle(
-                                                    color: Color(0xFF7DFFA2),
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
                                                     fontFamily: 'Inter',
                                                     fontSize: 17.sp,
                                                   ),
                                                 ),
-                                              ],
-                                            )
-                                          ],
+                                              ),
+                                              SizedBox(
+                                                height: 5.r,
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                      '${e.images_list.length} photos',
+                                                      style: TextStyle(
+                                                        color: Colors.white
+                                                            .withOpacity(0.7),
+                                                        fontFamily: 'Inter',
+                                                        fontSize: 17.sp,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '${e.toPay} dhs',
+                                                    style: TextStyle(
+                                                      color: Color(0xFF7DFFA2),
+                                                      fontFamily: 'Inter',
+                                                      fontSize: 17.sp,
+                                                    ),
+                                                  ),
+                                                ],
+                                              )
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),

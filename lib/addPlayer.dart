@@ -1,11 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AddPlayer extends StatefulWidget {
-  const AddPlayer({super.key});
+  const AddPlayer({super.key, required this.title});
 
+  final String title;
   @override
   State<AddPlayer> createState() => _AddPlayerState();
 }
@@ -13,6 +17,9 @@ class AddPlayer extends StatefulWidget {
 class _AddPlayerState extends State<AddPlayer> {
   int _stripNumber = 0;
   bool _tmpPaid = false;
+  final picker = ImagePicker();
+  String _imagePath = "", _topay = "0 dhs";
+  List<String> lst_photos = [];
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -20,11 +27,17 @@ class _AddPlayerState extends State<AddPlayer> {
       child: SafeArea(
         child: Scaffold(
           appBar: AppBar(
+            leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  print(">>> DATA SAVED !");
+                  Navigator.pop(context);
+                }),
             backgroundColor: const Color(0xFF030A32),
             elevation: 0,
             centerTitle: true,
             title: Text(
-              'Add Player',
+              widget.title,
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w100,
@@ -64,16 +77,23 @@ class _AddPlayerState extends State<AddPlayer> {
                               borderRadius: BorderRadius.circular(2100),
                               border: Border.all(color: Colors.white, width: 1),
                             ),
-                            child: Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: 80.r,
-                            ),
+                            child: _imagePath != ""
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(2100),
+                                    child: Image.file(
+                                      File(_imagePath),
+                                      fit: BoxFit.cover,
+                                    ))
+                                : Icon(
+                                    Icons.person,
+                                    color: Colors.white,
+                                    size: 80.r,
+                                  ),
                           ),
                           Align(
                             alignment: Alignment.topLeft,
                             child: Padding(
-                              padding: EdgeInsets.only(top: 10, left: 10),
+                              padding: const EdgeInsets.only(top: 10, left: 10),
                               child: Container(
                                 alignment: Alignment.center,
                                 height: 50.r,
@@ -185,10 +205,46 @@ class _AddPlayerState extends State<AddPlayer> {
                                   border:
                                       Border.all(color: Colors.white, width: 1),
                                 ),
-                                child: Icon(
-                                  Icons.camera_alt,
-                                  size: 20.r,
-                                  color: Colors.white,
+                                child: InkWell(
+                                  onTap: () async {
+                                    // get photo from gallery
+                                    final piickedFile = await picker.pickImage(
+                                        source: ImageSource.gallery);
+                                    if (piickedFile != null) {
+                                      File? croppedFile =
+                                          await ImageCropper().cropImage(
+                                        sourcePath: piickedFile.path,
+                                        aspectRatioPresets: [
+                                          CropAspectRatioPreset.square,
+                                          CropAspectRatioPreset.ratio3x2,
+                                          CropAspectRatioPreset.original,
+                                          CropAspectRatioPreset.ratio4x3,
+                                          CropAspectRatioPreset.ratio16x9
+                                        ],
+                                        androidUiSettings:
+                                            const AndroidUiSettings(
+                                          toolbarColor:
+                                              Color.fromARGB(255, 6, 0, 85),
+                                          toolbarTitle: 'Edit Photo',
+                                          toolbarWidgetColor: Colors.white,
+                                          activeControlsWidgetColor:
+                                              Colors.redAccent,
+                                          backgroundColor:
+                                              Color.fromARGB(255, 44, 44, 44),
+                                        ),
+                                      );
+                                      if (croppedFile != null) {
+                                        setState(() {
+                                          _imagePath = croppedFile.path;
+                                        });
+                                      }
+                                    }
+                                  },
+                                  child: Icon(
+                                    Icons.camera_alt,
+                                    size: 20.r,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
@@ -270,19 +326,102 @@ class _AddPlayerState extends State<AddPlayer> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '- photos',
+                            lst_photos.length > 1
+                                ? '${lst_photos.length} photos'
+                                : '${lst_photos.length} photo',
                             style: TextStyle(
                               color: Colors.white.withOpacity(0.7),
                               fontFamily: 'Inter',
                               fontSize: 20.sp,
                             ),
                           ),
-                          Text(
-                            '0 dhs',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontFamily: 'Inter',
-                              fontSize: 20.sp,
+                          InkWell(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return Dialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                    ),
+                                    child: Container(
+                                      width: 200.r,
+                                      height: 100.r,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF000B46),
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 1,
+                                        ),
+                                        borderRadius:
+                                            BorderRadius.circular(12.r),
+                                      ),
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 40.r),
+                                        child: TextFormField(
+                                          textAlign: TextAlign.center,
+                                          textInputAction: TextInputAction.done,
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontFamily: 'Inter',
+                                            fontSize: 26.sp,
+                                          ),
+                                          decoration: InputDecoration(
+                                              fillColor: Colors.transparent,
+                                              filled: true,
+                                              enabledBorder:
+                                                  const UnderlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color: Colors.white,
+                                                    width: 1),
+                                              ),
+                                              focusedBorder:
+                                                  const UnderlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color: Colors.white,
+                                                    width: 2),
+                                              ),
+                                              labelText: 'ammount to pay',
+                                              labelStyle: TextStyle(
+                                                fontFamily: 'Inter',
+                                                fontSize: 20.sp,
+                                                color: Colors.white
+                                                    .withOpacity(0.5),
+                                              )),
+                                          onChanged: (val) {
+                                            if (val != "") {
+                                              setState(() {
+                                                _topay = val + ' dhs';
+                                              });
+                                            } else {
+                                              setState(() {
+                                                _topay = '0 dhs';
+                                              });
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                            child: Container(
+                              alignment: Alignment.centerRight,
+                              height: 25.r,
+                              width: 150.r,
+                              child: FittedBox(
+                                fit: BoxFit.fitHeight,
+                                child: Text(
+                                  _topay,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'Inter',
+                                    fontSize: 20.sp,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -291,41 +430,143 @@ class _AddPlayerState extends State<AddPlayer> {
                     SizedBox(
                       height: 12.h,
                     ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 30.w),
-                      child: Row(
-                        children: [
-                          Container(
-                            height: 140.r,
-                            width: 140.r,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF051152),
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(10.r),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  'images/add_photo.png',
-                                ),
-                                SizedBox(height: 30.h),
-                                Text(
-                                  'add photo',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontFamily: 'Inter',
-                                    fontSize: 20.sp,
+                    Container(
+                      height: 140.r,
+                      width: MediaQuery.of(context).size.width,
+                      child: lst_photos.isNotEmpty
+                          ? ListView.builder(
+                              itemCount: lst_photos.length + 1,
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              itemBuilder: ((context, index) {
+                                if (index == 0) {
+                                  return Padding(
+                                    padding: EdgeInsets.only(
+                                        left: 30.r, right: 20.r),
+                                    child: InkWell(
+                                      onTap: () async {
+                                        // get photo from gallery
+                                        List<XFile> pickedFiles =
+                                            await picker.pickMultiImage();
+                                        if (pickedFiles != null) {
+                                          for (XFile image in pickedFiles) {
+                                            setState(() {
+                                              lst_photos.add(image.path);
+                                            });
+                                          }
+                                        }
+                                      },
+                                      child: Container(
+                                        height: 140.r,
+                                        width: 140.r,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF051152),
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 1,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(10.r),
+                                        ),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Image.asset(
+                                              'images/add_photo.png',
+                                            ),
+                                            SizedBox(height: 30.h),
+                                            Text(
+                                              'add photo',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontFamily: 'Inter',
+                                                fontSize: 20.sp,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                                return Padding(
+                                  padding: EdgeInsets.only(right: 20.r),
+                                  child: Container(
+                                    height: 140.r,
+                                    width: 140.r,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF051152),
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10.r),
+                                    ),
+                                    child: ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(10.r),
+                                        child: Image.file(
+                                          File(lst_photos[index - 1]),
+                                          fit: BoxFit.cover,
+                                        )),
                                   ),
-                                ),
-                              ],
+                                );
+                              }),
+                            )
+                          : Padding(
+                              padding: EdgeInsets.only(left: 30.r),
+                              child: Row(
+                                children: [
+                                  InkWell(
+                                    onTap: () async {
+                                      // get photo from gallery
+                                      List<XFile> pickedFiles =
+                                          await picker.pickMultiImage();
+                                      if (pickedFiles != null) {
+                                        for (XFile image in pickedFiles) {
+                                          setState(() {
+                                            lst_photos.add(image.path);
+                                          });
+                                        }
+                                      }
+                                    },
+                                    child: Container(
+                                      height: 140.r,
+                                      width: 140.r,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF051152),
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 1,
+                                        ),
+                                        borderRadius:
+                                            BorderRadius.circular(10.r),
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Image.asset(
+                                            'images/add_photo.png',
+                                          ),
+                                          SizedBox(height: 30.h),
+                                          Text(
+                                            'add photo',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontFamily: 'Inter',
+                                              fontSize: 20.sp,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
                     ),
                     SizedBox(
                       height: 35.h,
