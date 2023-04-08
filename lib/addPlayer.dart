@@ -174,8 +174,12 @@ class _AddPlayerState extends State<AddPlayer> {
                                                     )),
                                                 onChanged: (val) {
                                                   setState(() {
-                                                    _stripNumber =
-                                                        int.parse(val);
+                                                    if (val != "") {
+                                                      _stripNumber =
+                                                          int.parse(val);
+                                                    } else {
+                                                      _stripNumber = 0;
+                                                    }
                                                   });
                                                 },
                                               ),

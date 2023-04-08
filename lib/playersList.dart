@@ -17,8 +17,11 @@ class PLayersList extends StatefulWidget {
 }
 
 class _PLayersListState extends State<PLayersList> {
+  List<Player> lst_players_tmp = [];
+  bool called = false;
   @override
   Widget build(BuildContext context) {
+    lst_players_tmp = widget.lst_players_tmp;
     return Container(
       color: const Color(0xFF030A32),
       child: SafeArea(

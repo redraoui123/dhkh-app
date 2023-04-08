@@ -122,7 +122,9 @@ class _HomeAdminState extends State<HomeAdmin> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            '0',
+                            lst_players_global.isNotEmpty
+                                ? calculatePrices()
+                                : '0',
                             style: TextStyle(
                               color: Colors.white,
                               fontFamily: 'Inter',
