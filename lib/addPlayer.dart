@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -6,20 +7,26 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
-class AddPlayer extends StatefulWidget {
-  const AddPlayer({super.key, required this.title});
+import 'classes/Player.dart';
 
+class AddPlayer extends StatefulWidget {
+  const AddPlayer(
+      {super.key, required this.title, required this.lst_players_tmp});
+  final List<Player> lst_players_tmp;
   final String title;
   @override
   State<AddPlayer> createState() => _AddPlayerState();
 }
 
 class _AddPlayerState extends State<AddPlayer> {
-  int _stripNumber = 0;
+  int _stripNumber = 0, _phoneNumber = 0, _topay = 0;
   bool _tmpPaid = false;
   final picker = ImagePicker();
-  String _imagePath = "", _topay = "0 dhs";
+  String _imagePath = "", _fullName = "";
   List<String> lst_photos = [];
+
+  Random rnd = Random();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -29,9 +36,12 @@ class _AddPlayerState extends State<AddPlayer> {
           appBar: AppBar(
             leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  print(">>> DATA SAVED !");
-                  Navigator.pop(context);
+                onPressed: () async {
+                  // Future methode to add the created player to the list
+                  await addPlayer();
+                  widget.title == "Add new Player"
+                      ? Navigator.pop(context, widget.lst_players_tmp)
+                      : Navigator.pop(context);
                 }),
             backgroundColor: const Color(0xFF030A32),
             elevation: 0,
@@ -281,7 +291,11 @@ class _AddPlayerState extends State<AddPlayer> {
                               fontSize: 20.sp,
                               color: Colors.white.withOpacity(0.5),
                             )),
-                        onChanged: (val) {},
+                        onChanged: (val) {
+                          setState(() {
+                            _fullName = val;
+                          });
+                        },
                       ),
                     ),
                     SizedBox(
@@ -314,7 +328,11 @@ class _AddPlayerState extends State<AddPlayer> {
                               fontSize: 20.sp,
                               color: Colors.white.withOpacity(0.5),
                             )),
-                        onChanged: (val) {},
+                        onChanged: (val) {
+                          setState(() {
+                            _phoneNumber = int.parse(val);
+                          });
+                        },
                       ),
                     ),
                     SizedBox(
@@ -392,11 +410,11 @@ class _AddPlayerState extends State<AddPlayer> {
                                           onChanged: (val) {
                                             if (val != "") {
                                               setState(() {
-                                                _topay = val + ' dhs';
+                                                _topay = int.parse(val);
                                               });
                                             } else {
                                               setState(() {
-                                                _topay = '0 dhs';
+                                                _topay = 0;
                                               });
                                             }
                                           },
@@ -414,7 +432,7 @@ class _AddPlayerState extends State<AddPlayer> {
                               child: FittedBox(
                                 fit: BoxFit.fitHeight,
                                 child: Text(
-                                  _topay,
+                                  '$_topay dhs',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontFamily: 'Inter',
@@ -632,5 +650,18 @@ class _AddPlayerState extends State<AddPlayer> {
         ),
       ),
     );
+  }
+
+  Future<void> addPlayer() async {
+    Player player = Player(
+        id: rnd.nextInt(999999),
+        fullName: _fullName,
+        phoneNumber: _phoneNumber,
+        stripNumber: _stripNumber,
+        profilePicture: _imagePath,
+        images_list: lst_photos,
+        hasPaid: _tmpPaid,
+        toPay: _topay);
+    widget.lst_players_tmp.add(player);
   }
 }

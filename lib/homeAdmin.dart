@@ -9,6 +9,8 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'classes/Player.dart';
+import 'main.dart';
 
 class HomeAdmin extends StatefulWidget {
   const HomeAdmin({super.key});
@@ -21,7 +23,7 @@ class _HomeAdminState extends State<HomeAdmin> {
   int _homeScore = 0, _awayScore = 0;
   String _awayName = "-", _image_64 = "", _imagePath = "";
   bool _changed = false;
-
+  List<Player> lst_players_global = [];
   final picker = ImagePicker();
   @override
   Widget build(BuildContext context) {
@@ -39,10 +41,18 @@ class _HomeAdminState extends State<HomeAdmin> {
                   child: InkWell(
                     onTap: () {
                       Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  const AddPlayer(title: 'Add new Player')));
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AddPlayer(
+                            title: 'Add new Player',
+                            lst_players_tmp: lst_players_global,
+                          ),
+                        ),
+                      ).then((value) {
+                        setState(() {
+                          lst_players_global = value;
+                        });
+                      });
                     },
                     child: const Icon(
                       Icons.add,
@@ -152,10 +162,13 @@ class _HomeAdminState extends State<HomeAdmin> {
                           InkWell(
                             onTap: () {
                               Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const PLayersList()));
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PLayersList(
+                                    lst_players_tmp: lst_players_global,
+                                  ),
+                                ),
+                              );
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -166,7 +179,9 @@ class _HomeAdminState extends State<HomeAdmin> {
                                   width: 30.w,
                                 ),
                                 Text(
-                                  '0',
+                                  lst_players_global.isNotEmpty
+                                      ? lst_players_global.length.toString()
+                                      : '0',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontFamily: 'Inter',
@@ -195,7 +210,9 @@ class _HomeAdminState extends State<HomeAdmin> {
                                 width: 30.w,
                               ),
                               Text(
-                                '0',
+                                lst_players_global.isNotEmpty
+                                    ? calculatePhotos()
+                                    : '0',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontFamily: 'Inter',
@@ -518,6 +535,22 @@ class _HomeAdminState extends State<HomeAdmin> {
         ),
       ),
     );
+  }
+
+  String calculatePrices() {
+    int price = 0;
+    for (var player in lst_players_global) {
+      price += int.parse(player.toPay.toString());
+    }
+    return price.toString();
+  }
+
+  String calculatePhotos() {
+    int totalPhotos = 0;
+    for (var player in lst_players_global) {
+      totalPhotos += player.images_list.length;
+    }
+    return totalPhotos.toString();
   }
 
   String imageToBase64(File? image) {
