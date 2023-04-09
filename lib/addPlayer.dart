@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -38,10 +39,31 @@ class _AddPlayerState extends State<AddPlayer> {
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () async {
                   // Future methode to add the created player to the list
-                  await addPlayer();
-                  widget.title == "Add new Player"
-                      ? Navigator.pop(context, widget.lst_players_tmp)
-                      : Navigator.pop(context);
+                  if (_fullName != "" &&
+                      _phoneNumber != 0 &&
+                      _imagePath != "") {
+                    await addPlayer();
+                    // ignore: use_build_context_synchronously
+                    Navigator.pop(context, widget.lst_players_tmp);
+                  } else if (_fullName != "" ||
+                      _phoneNumber != 0 ||
+                      _imagePath != "") {
+                    Flushbar(
+                      messageText: Text(
+                        "One or more values are required!",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w100,
+                          fontFamily: 'Inter',
+                          fontSize: 20.sp,
+                        ),
+                      ),
+                      backgroundColor: Colors.redAccent,
+                      duration: const Duration(seconds: 3),
+                    ).show(context);
+                  } else {
+                    Navigator.pop(context, widget.lst_players_tmp);
+                  }
                 }),
             backgroundColor: const Color(0xFF030A32),
             elevation: 0,
@@ -141,9 +163,14 @@ class _AddPlayerState extends State<AddPlayer> {
                                               padding: EdgeInsets.symmetric(
                                                   horizontal: 40.r),
                                               child: TextFormField(
+                                                onEditingComplete: () {
+                                                  Navigator.pop(context);
+                                                },
                                                 textAlign: TextAlign.center,
                                                 textInputAction:
                                                     TextInputAction.done,
+                                                keyboardType:
+                                                    TextInputType.number,
                                                 style: TextStyle(
                                                   color: Colors.white,
                                                   fontFamily: 'Inter',
@@ -272,6 +299,7 @@ class _AddPlayerState extends State<AddPlayer> {
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 30.w),
                       child: TextFormField(
+                        textCapitalization: TextCapitalization.words,
                         textInputAction: TextInputAction.next,
                         style: TextStyle(
                           color: Colors.white,
@@ -297,7 +325,11 @@ class _AddPlayerState extends State<AddPlayer> {
                             )),
                         onChanged: (val) {
                           setState(() {
-                            _fullName = val;
+                            if (val != "") {
+                              _fullName = val;
+                            } else {
+                              _fullName = "";
+                            }
                           });
                         },
                       ),
@@ -334,7 +366,11 @@ class _AddPlayerState extends State<AddPlayer> {
                             )),
                         onChanged: (val) {
                           setState(() {
-                            _phoneNumber = int.parse(val);
+                            if (val != "") {
+                              _phoneNumber = int.parse(val);
+                            } else {
+                              _phoneNumber = 0;
+                            }
                           });
                         },
                       ),
@@ -382,8 +418,12 @@ class _AddPlayerState extends State<AddPlayer> {
                                         padding: EdgeInsets.symmetric(
                                             horizontal: 40.r),
                                         child: TextFormField(
+                                          onEditingComplete: () {
+                                            Navigator.pop(context);
+                                          },
                                           textAlign: TextAlign.center,
                                           textInputAction: TextInputAction.done,
+                                          keyboardType: TextInputType.number,
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontFamily: 'Inter',

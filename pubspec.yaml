@@ -40,6 +40,7 @@ dependencies:
   intrinsic_grid_view: ^0.0.2
   image_picker: ^0.8.5
   image_cropper: ^1.5.1
+  another_flushbar: ^1.12.29
 
 dev_dependencies:
   flutter_test:
