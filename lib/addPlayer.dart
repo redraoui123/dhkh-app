@@ -12,24 +12,39 @@ import 'classes/Player.dart';
 
 class AddPlayer extends StatefulWidget {
   const AddPlayer(
-      {super.key, required this.title, required this.lst_players_tmp});
+      {super.key,
+      required this.title,
+      required this.lst_players_tmp,
+      required this.playerTmp});
   final List<Player> lst_players_tmp;
+  final Player playerTmp;
   final String title;
   @override
   State<AddPlayer> createState() => _AddPlayerState();
 }
 
 class _AddPlayerState extends State<AddPlayer> {
-  int _stripNumber = 0, _phoneNumber = 0, _topay = 0;
+  int? _stripNumber = 0, _phoneNumber = 0, _topay = 0, _id = 0;
   bool _tmpPaid = false;
   final picker = ImagePicker();
   String _imagePath = "", _fullName = "";
-  List<String> lst_photos = [];
+  List<String?> lst_photos = [];
 
   Random rnd = Random();
 
   @override
   Widget build(BuildContext context) {
+    if (widget.title != 'Add new Player') {
+      setState(() {
+        _id = widget.playerTmp.id;
+        _stripNumber = widget.playerTmp.stripNumber;
+        _fullName = widget.playerTmp.fullName.toString();
+        _phoneNumber = widget.playerTmp.phoneNumber;
+        _imagePath = widget.playerTmp.profilePicture.toString();
+        lst_photos = widget.playerTmp.images_list;
+        _topay = widget.playerTmp.toPay;
+      });
+    }
     return Container(
       color: const Color(0xFF030A32),
       child: SafeArea(
@@ -38,33 +53,58 @@ class _AddPlayerState extends State<AddPlayer> {
             leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () async {
-                  // Future methode to add the created player to the list
-                  if (_fullName != "" &&
-                      _phoneNumber != 0 &&
-                      _imagePath != "") {
-                    await addPlayer();
-                    // ignore: use_build_context_synchronously
-                    Navigator.pop(context, widget.lst_players_tmp);
-                  } else if (_fullName != "" ||
-                      _phoneNumber != 0 ||
-                      _imagePath != "") {
-                    Flushbar(
-                      messageText: Text(
-                        "One or more values are required!",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w100,
-                          fontFamily: 'Inter',
-                          fontSize: 20.sp,
+                  // Add new player
+                  if (widget.title == "Add new Player") {
+                    if (_fullName != "" &&
+                        _phoneNumber != 0 &&
+                        _imagePath != "") {
+                      await addPlayer();
+                      // ignore: use_build_context_synchronously
+                      Navigator.pop(context, widget.lst_players_tmp);
+                    } else if (_fullName != "" ||
+                        _phoneNumber != 0 ||
+                        _imagePath != "") {
+                      Flushbar(
+                        messageText: Text(
+                          "One or more values are required!",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w100,
+                            fontFamily: 'Inter',
+                            fontSize: 20.sp,
+                          ),
                         ),
-                      ),
-                      backgroundColor: Colors.redAccent,
-                      duration: const Duration(seconds: 3),
-                    ).show(context);
-                  } else {
-                    Navigator.pop(context, widget.lst_players_tmp);
+                        backgroundColor: Colors.redAccent,
+                        duration: const Duration(seconds: 3),
+                      ).show(context);
+                    } else {
+                      Navigator.pop(context, widget.lst_players_tmp);
+                    }
+                  }
+                  // PLayer details
+                  else {
+                    if (_fullName != "" &&
+                        _phoneNumber != 0 &&
+                        _imagePath != "") {
+                      await updatePlayer(widget.playerTmp);
+                      // ignore: use_build_context_synchronously
+                      Navigator.pop(context, widget.lst_players_tmp);
+                    }
                   }
                 }),
+            actions: [
+              if (widget.title != 'Add new Player')
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () async {
+                    if (_id != 0) {
+                      await removePlayer(_id);
+                      // ignore: use_build_context_synchronously
+                      Navigator.pop(context, widget.lst_players_tmp);
+                    }
+                  },
+                ),
+            ],
             backgroundColor: const Color(0xFF030A32),
             elevation: 0,
             centerTitle: true,
@@ -299,6 +339,9 @@ class _AddPlayerState extends State<AddPlayer> {
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 30.w),
                       child: TextFormField(
+                        initialValue: widget.title != 'Add new Player'
+                            ? widget.playerTmp.fullName
+                            : null,
                         textCapitalization: TextCapitalization.words,
                         textInputAction: TextInputAction.next,
                         style: TextStyle(
@@ -340,7 +383,10 @@ class _AddPlayerState extends State<AddPlayer> {
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 30.w),
                       child: TextFormField(
-                        keyboardType: TextInputType.number,
+                        initialValue: widget.title != 'Add new Player'
+                            ? '0${widget.playerTmp.phoneNumber}'
+                            : null,
+                        keyboardType: TextInputType.phone,
                         textInputAction: TextInputAction.done,
                         style: TextStyle(
                           color: Colors.white,
@@ -570,7 +616,8 @@ class _AddPlayerState extends State<AddPlayer> {
                                         borderRadius:
                                             BorderRadius.circular(10.r),
                                         child: Image.file(
-                                          File(lst_photos[index - 1]),
+                                          File(
+                                              lst_photos[index - 1].toString()),
                                           fit: BoxFit.cover,
                                         )),
                                   ),
@@ -707,5 +754,33 @@ class _AddPlayerState extends State<AddPlayer> {
         hasPaid: _tmpPaid,
         toPay: _topay);
     widget.lst_players_tmp.add(player);
+  }
+
+// error still here
+
+  Future<void> updatePlayer(Player oldplayer) async {
+    Player newplayer = Player(
+        id: oldplayer.id,
+        fullName: _fullName,
+        phoneNumber: _phoneNumber,
+        stripNumber: _stripNumber,
+        profilePicture: _imagePath,
+        images_list: lst_photos,
+        hasPaid: _tmpPaid,
+        toPay: _topay);
+
+    int index = widget.lst_players_tmp
+        .indexWhere((element) => element.id == oldplayer.id);
+
+    setState(() {
+      widget.lst_players_tmp[index] = newplayer;
+    });
+    for (var player in widget.lst_players_tmp) {
+      print(player.fullName);
+    }
+  }
+
+  Future<void> removePlayer(int? id) async {
+    widget.lst_players_tmp.removeWhere((element) => element.id == id);
   }
 }

@@ -46,6 +46,15 @@ class _HomeAdminState extends State<HomeAdmin> {
                           builder: (context) => AddPlayer(
                             title: 'Add new Player',
                             lst_players_tmp: lst_players_global,
+                            playerTmp: Player(
+                                id: 0,
+                                fullName: "",
+                                hasPaid: false,
+                                images_list: [],
+                                phoneNumber: 0,
+                                profilePicture: "",
+                                stripNumber: 0,
+                                toPay: 0),
                           ),
                         ),
                       ).then((value) {
@@ -170,7 +179,11 @@ class _HomeAdminState extends State<HomeAdmin> {
                                     lst_players_tmp: lst_players_global,
                                   ),
                                 ),
-                              );
+                              ).then((value) {
+                                setState(() {
+                                  lst_players_global = value;
+                                });
+                              });
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,

@@ -41,9 +41,22 @@ class _PLayersListState extends State<PLayersList> {
                                 builder: (context) => AddPlayer(
                                   title: 'Add new Player',
                                   lst_players_tmp: widget.lst_players_tmp,
+                                  playerTmp: Player(
+                                      id: 0,
+                                      fullName: "",
+                                      phoneNumber: 0,
+                                      hasPaid: false,
+                                      stripNumber: 0,
+                                      images_list: [],
+                                      profilePicture: "",
+                                      toPay: 0),
                                 ),
                               ),
-                            )
+                            ).then((value) {
+                              setState(() {
+                                lst_players_tmp = value;
+                              });
+                            })
                           : 0;
                     },
                     child: Icon(
@@ -97,14 +110,24 @@ class _PLayersListState extends State<PLayersList> {
                               child: InkWell(
                                 onTap: () {
                                   Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => AddPlayer(
-                                                title:
-                                                    '${e.fullName!.split(" ")[0]} Details',
-                                                lst_players_tmp:
-                                                    widget.lst_players_tmp,
-                                              )));
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddPlayer(
+                                        title:
+                                            '${e.fullName!.split(" ")[0]} Details',
+                                        lst_players_tmp: widget.lst_players_tmp,
+                                        playerTmp: Player(
+                                            id: e.id,
+                                            fullName: e.fullName,
+                                            phoneNumber: e.phoneNumber,
+                                            hasPaid: e.hasPaid,
+                                            stripNumber: e.stripNumber,
+                                            images_list: e.images_list,
+                                            profilePicture: e.profilePicture,
+                                            toPay: e.toPay),
+                                      ),
+                                    ),
+                                  );
                                 },
                                 child: Container(
                                   height: 250.h,
