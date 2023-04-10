@@ -29,6 +29,11 @@ class _PLayersListState extends State<PLayersList> {
           appBar: AppBar(
             backgroundColor: const Color(0xFF030A32),
             elevation: 0,
+            leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () async {
+                  Navigator.pop(context, widget.lst_players_tmp);
+                }),
             actions: [
               Padding(
                   padding: EdgeInsets.only(right: 25.w),
@@ -127,7 +132,11 @@ class _PLayersListState extends State<PLayersList> {
                                             toPay: e.toPay),
                                       ),
                                     ),
-                                  );
+                                  ).then((value) {
+                                    setState(() {
+                                      lst_players_tmp = value;
+                                    });
+                                  });
                                 },
                                 child: Container(
                                   height: 250.h,

@@ -203,6 +203,12 @@ class _AddPlayerState extends State<AddPlayer> {
                                               padding: EdgeInsets.symmetric(
                                                   horizontal: 40.r),
                                               child: TextFormField(
+                                                initialValue: widget.title !=
+                                                        'Add new Player'
+                                                    ? widget
+                                                        .playerTmp.stripNumber
+                                                        .toString()
+                                                    : null,
                                                 onEditingComplete: () {
                                                   Navigator.pop(context);
                                                 },
@@ -769,15 +775,16 @@ class _AddPlayerState extends State<AddPlayer> {
         hasPaid: _tmpPaid,
         toPay: _topay);
 
-    int index = widget.lst_players_tmp
-        .indexWhere((element) => element.id == oldplayer.id);
+    print('>> NEW PLAYER NAME : ' + newplayer.stripNumber.toString());
+    // int index = widget.lst_players_tmp
+    //     .indexWhere((element) => element.id == oldplayer.id);
 
-    setState(() {
-      widget.lst_players_tmp[index] = newplayer;
-    });
-    for (var player in widget.lst_players_tmp) {
-      print(player.fullName);
-    }
+    // setState(() {
+    //   widget.lst_players_tmp[index] = newplayer;
+    // });
+    // for (var player in widget.lst_players_tmp) {
+    //   print(player.fullName);
+    // }
   }
 
   Future<void> removePlayer(int? id) async {
