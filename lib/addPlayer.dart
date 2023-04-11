@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:another_flushbar/flushbar.dart';
+import 'package:dhkhapp/imageViewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -25,7 +26,7 @@ class AddPlayer extends StatefulWidget {
 
 class _AddPlayerState extends State<AddPlayer> {
   int? _stripNumber = 0, _phoneNumber = 0, _topay = 0, _id = 0;
-  bool _tmpPaid = false;
+  bool _tmpPaid = false, loaded = false;
   final picker = ImagePicker();
   String _imagePath = "", _fullName = "";
   List<String?> lst_photos = [];
@@ -35,15 +36,18 @@ class _AddPlayerState extends State<AddPlayer> {
   @override
   Widget build(BuildContext context) {
     if (widget.title != 'Add new Player') {
-      setState(() {
-        _id = widget.playerTmp.id;
-        _stripNumber = widget.playerTmp.stripNumber;
-        _fullName = widget.playerTmp.fullName.toString();
-        _phoneNumber = widget.playerTmp.phoneNumber;
-        _imagePath = widget.playerTmp.profilePicture.toString();
-        lst_photos = widget.playerTmp.images_list;
-        _topay = widget.playerTmp.toPay;
-      });
+      if (!loaded) {
+        setState(() {
+          _id = widget.playerTmp.id;
+          _stripNumber = widget.playerTmp.stripNumber;
+          _fullName = widget.playerTmp.fullName.toString();
+          _phoneNumber = widget.playerTmp.phoneNumber;
+          _imagePath = widget.playerTmp.profilePicture.toString();
+          lst_photos = widget.playerTmp.images_list;
+          _topay = widget.playerTmp.toPay;
+          loaded = true;
+        });
+      }
     }
     return Container(
       color: const Color(0xFF030A32),
@@ -203,12 +207,6 @@ class _AddPlayerState extends State<AddPlayer> {
                                               padding: EdgeInsets.symmetric(
                                                   horizontal: 40.r),
                                               child: TextFormField(
-                                                initialValue: widget.title !=
-                                                        'Add new Player'
-                                                    ? widget
-                                                        .playerTmp.stripNumber
-                                                        .toString()
-                                                    : null,
                                                 onEditingComplete: () {
                                                   Navigator.pop(context);
                                                 },
@@ -621,10 +619,24 @@ class _AddPlayerState extends State<AddPlayer> {
                                     child: ClipRRect(
                                         borderRadius:
                                             BorderRadius.circular(10.r),
-                                        child: Image.file(
-                                          File(
-                                              lst_photos[index - 1].toString()),
-                                          fit: BoxFit.cover,
+                                        child: InkWell(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ImageViewer(
+                                                        imageURL: lst_photos[
+                                                                index - 1]
+                                                            .toString()),
+                                              ),
+                                            );
+                                          },
+                                          child: Image.file(
+                                            File(lst_photos[index - 1]
+                                                .toString()),
+                                            fit: BoxFit.cover,
+                                          ),
                                         )),
                                   ),
                                 );
@@ -775,16 +787,12 @@ class _AddPlayerState extends State<AddPlayer> {
         hasPaid: _tmpPaid,
         toPay: _topay);
 
-    print('>> NEW PLAYER NAME : ' + newplayer.stripNumber.toString());
-    // int index = widget.lst_players_tmp
-    //     .indexWhere((element) => element.id == oldplayer.id);
+    int index = widget.lst_players_tmp
+        .indexWhere((element) => element.id == oldplayer.id);
 
-    // setState(() {
-    //   widget.lst_players_tmp[index] = newplayer;
-    // });
-    // for (var player in widget.lst_players_tmp) {
-    //   print(player.fullName);
-    // }
+    setState(() {
+      widget.lst_players_tmp[index] = newplayer;
+    });
   }
 
   Future<void> removePlayer(int? id) async {

@@ -19,6 +19,7 @@ class PLayersList extends StatefulWidget {
 class _PLayersListState extends State<PLayersList> {
   List<Player> lst_players_tmp = [];
   bool called = false;
+  Color _borderColor = Colors.white;
   @override
   Widget build(BuildContext context) {
     lst_players_tmp = widget.lst_players_tmp;
@@ -112,7 +113,7 @@ class _PLayersListState extends State<PLayersList> {
                                 right: 20.r,
                                 left: 20.r,
                               ),
-                              child: InkWell(
+                              child: GestureDetector(
                                 onTap: () {
                                   Navigator.push(
                                     context,
@@ -144,7 +145,7 @@ class _PLayersListState extends State<PLayersList> {
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF051152),
                                     border: Border.all(
-                                        color: Colors.white, width: 1),
+                                        color: _borderColor, width: 1),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Stack(
