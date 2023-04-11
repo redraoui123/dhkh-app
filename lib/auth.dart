@@ -2,6 +2,7 @@ import 'package:dhkhapp/homeAdmin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'homeClient.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class Authenticate extends StatefulWidget {
@@ -13,7 +14,7 @@ class Authenticate extends StatefulWidget {
 
 class _AuthenticateState extends State<Authenticate> {
   bool _isobscure = true;
-  String _lockImage = "images/lock_off.png";
+  String _lockImage = "images/lock_off.png", _username = "";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,7 +76,9 @@ class _AuthenticateState extends State<Authenticate> {
                             color: Colors.white.withOpacity(0.5),
                           )),
                       onChanged: (val) {
-                        print('username = ' + val);
+                        setState(() {
+                          val != "" ? _username = val : _username = "";
+                        });
                       },
                     ),
                   ),
@@ -137,9 +140,7 @@ class _AuthenticateState extends State<Authenticate> {
                             fontSize: 20.sp,
                             color: Colors.white.withOpacity(0.5),
                           )),
-                      onChanged: (val) {
-                        print('password = ' + val);
-                      },
+                      onChanged: (val) {},
                     ),
                   ),
                 ],
@@ -150,9 +151,15 @@ class _AuthenticateState extends State<Authenticate> {
               left: MediaQuery.of(context).size.width / 2 - (175.w / 2),
               child: InkWell(
                 onTap: () {
-                  // move to home
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => HomeAdmin()));
+                  if (_username == "admin" || _username == "Admin") {
+                    // move to home
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => HomeAdmin()));
+                  } else {
+                    // move to home
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => HomeClient()));
+                  }
                 },
                 child: Container(
                   alignment: Alignment.center,
