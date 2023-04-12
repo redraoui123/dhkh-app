@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dhkhapp/listImagesClient.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -123,13 +124,17 @@ class _HomeClientState extends State<HomeClient> {
       animationDuration: const Duration(milliseconds: 300),
       animateChildDecoration: true,
       rtlOpening: false,
-      // openScale: 1.0,
       disabledGestures: false,
-      childDecoration: const BoxDecoration(
-        // NOTICE: Uncomment if you want to add shadow behind the page.
-        // Keep in mind that it may cause animation jerks.
-
-        borderRadius: BorderRadius.all(Radius.circular(16)),
+      childDecoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0032FF).withOpacity(0.5),
+            spreadRadius: 5,
+            blurRadius: 7,
+            offset: const Offset(0, 0),
+          ),
+        ],
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
       ),
       child: Container(
         color: Color(0xFF030A32),
@@ -241,43 +246,50 @@ class _HomeClientState extends State<HomeClient> {
                                 ],
                               ),
                             ),
-                            Container(
-                              decoration: BoxDecoration(
-                                  color: const Color(0xFF0A0A52),
-                                  borderRadius: BorderRadius.only(
-                                      bottomLeft: Radius.circular(22.r),
-                                      bottomRight: Radius.circular(22.r)),
-                                  border: Border.all(
-                                    color: Colors.white,
-                                    width: 1,
-                                  )),
-                              height: 95.h,
-                              width: 230.w,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  SizedBox(
-                                    height: 15.h,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Image.asset('images/photo.png',
-                                          width: 40.w, height: 40.h),
-                                      SizedBox(
-                                        width: 30.w,
-                                      ),
-                                      Text(
-                                        '0',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontFamily: 'Inter',
-                                          fontSize: 45.sp,
+                            InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const ListImagesClient()));
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    color: const Color(0xFF0A0A52),
+                                    borderRadius: BorderRadius.only(
+                                        bottomLeft: Radius.circular(22.r),
+                                        bottomRight: Radius.circular(22.r)),
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 1,
+                                    )),
+                                height: 80.h,
+                                width: 230.w,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Image.asset('images/photo.png',
+                                            width: 40.w, height: 40.h),
+                                        SizedBox(
+                                          width: 30.w,
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                        Text(
+                                          '0',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontFamily: 'Inter',
+                                            fontSize: 45.sp,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ],
