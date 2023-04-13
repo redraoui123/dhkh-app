@@ -1,9 +1,17 @@
+import 'dart:io';
+
 import 'package:dhkhapp/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 
-void main() {
+void main() async {
   runApp(const MyApp());
+  WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+    if (Platform.isAndroid) {
+      await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
+    }
+  });
 }
 
 class MyApp extends StatelessWidget {

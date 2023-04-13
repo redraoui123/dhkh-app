@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -16,47 +17,58 @@ class ImageViewerClient extends StatefulWidget {
 }
 
 class _ImageViewerClientState extends State<ImageViewerClient> {
+  String _currentImage = "0";
+
+  bool _called = false;
   @override
   Widget build(BuildContext context) {
+    if (_called == false) {
+      setState(() {
+        _currentImage = (widget.index + 1).toString();
+        _called = true;
+      });
+    }
+
     return Container(
       color: Color(0xFF030A32),
       child: SafeArea(
         child: Scaffold(
           appBar: AppBar(
-              actions: [
-                Padding(
-                  padding: EdgeInsets.only(right: 10.r),
-                  child: Container(
-                    alignment: Alignment.center,
-                    height: 32.r,
-                    width: 45.r,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        widget.lst_photos.isNotEmpty
-                            ? '${widget.index + 1} / ${widget.lst_photos.length}'
-                            : '0',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'Inter',
-                          fontSize: 25.sp,
-                        ),
+            actions: [
+              Padding(
+                padding: EdgeInsets.only(right: 10.r),
+                child: Container(
+                  alignment: Alignment.center,
+                  height: 32.r,
+                  width: 45.r,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      widget.lst_photos.isNotEmpty
+                          ? '$_currentImage / ${widget.lst_photos.length}'
+                          : '0',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'Inter',
+                        fontSize: 25.sp,
                       ),
                     ),
                   ),
                 ),
-              ],
-              backgroundColor: const Color(0xFF030A32),
-              elevation: 0,
-              centerTitle: true,
-              title: Text(
-                'Photos List',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontSize: 25.sp,
-                ),
-              )),
+              ),
+            ],
+            backgroundColor: const Color(0xFF030A32),
+            elevation: 0,
+            centerTitle: true,
+            title: Text(
+              'Download',
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'Inter',
+                fontSize: 25.sp,
+              ),
+            ),
+          ),
           body: Stack(
             alignment: Alignment.topCenter,
             children: [
@@ -71,19 +83,24 @@ class _ImageViewerClientState extends State<ImageViewerClient> {
                 options: CarouselOptions(
                   height: MediaQuery.of(context).size.height,
                   aspectRatio: 16 / 9,
-                  viewportFraction: 0.8,
-                  initialPage: 0,
+                  viewportFraction: 1.0,
+                  initialPage: widget.index,
                   enableInfiniteScroll: true,
+                  onPageChanged: (index, reason) {
+                    setState(() {
+                      _currentImage = (index + 1).toString();
+                    });
+                  },
                 ),
                 items: widget.lst_photos
                     .map(
                       (e) => Container(
                         alignment: Alignment.center,
-                        color: Colors.pink,
                         width: MediaQuery.of(context).size.width,
-                        child: Text(
-                          (widget.lst_photos.indexOf(e) + 1).toString(),
-                          style: TextStyle(fontSize: 40),
+                        child: Image.file(
+                          File(e),
+                          fit: BoxFit.cover,
+                          height: MediaQuery.of(context).size.height,
                         ),
                       ),
                     )
