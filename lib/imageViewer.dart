@@ -23,6 +23,7 @@ class _ImageViewerState extends State<ImageViewer> {
             alignment: Alignment.center,
             color: const Color(0xFF030A32),
             child: PhotoView(
+              minScale: 1.0,
               backgroundDecoration: const BoxDecoration(
                 color: Color(0xFF030A32),
               ),

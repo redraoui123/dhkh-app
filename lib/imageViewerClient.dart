@@ -18,6 +18,7 @@ class ImageViewerClient extends StatefulWidget {
 
 class _ImageViewerClientState extends State<ImageViewerClient> {
   String _currentImage = "0";
+  bool _paid = false;
 
   bool _called = false;
   @override
@@ -60,12 +61,15 @@ class _ImageViewerClientState extends State<ImageViewerClient> {
             backgroundColor: const Color(0xFF030A32),
             elevation: 0,
             centerTitle: true,
-            title: Text(
-              'Download',
-              style: TextStyle(
-                color: Colors.white,
-                fontFamily: 'Inter',
-                fontSize: 25.sp,
+            title: InkWell(
+              onTap: () {},
+              child: Text(
+                'Download',
+                style: TextStyle(
+                  color: _paid ? Colors.white : Colors.white.withOpacity(0.4),
+                  fontFamily: 'Inter',
+                  fontSize: 25.sp,
+                ),
               ),
             ),
           ),

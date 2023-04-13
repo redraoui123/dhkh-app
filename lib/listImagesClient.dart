@@ -16,12 +16,7 @@ class ListImagesClient extends StatefulWidget {
 }
 
 class _ListImagesClientState extends State<ListImagesClient> {
-  List<String> lst_photos_tmp = [
-    '/data/user/0/com.example.dhkhapp/cache/816ec92d-d134-4ab6-a5e5-a34b5adf06b7/17_19.jpg',
-    '/data/user/0/com.example.dhkhapp/cache/5b292082-c0b7-44bd-b0a9-90505ac3feb0/17_12.jpg',
-    '/data/user/0/com.example.dhkhapp/cache/2871685d-2062-4dae-9e12-95788f8d956c/17.jpg',
-    '/data/user/0/com.example.dhkhapp/cache/7a49bb90-df08-4924-b652-90b75c662f9b/17_5.jpg',
-  ];
+  List<String> lst_photos_tmp = [];
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -106,8 +101,8 @@ class _ListImagesClientState extends State<ListImagesClient> {
                                               )));
                                 },
                                 child: Container(
-                                  height: 250.h,
-                                  width: 160.w,
+                                  height: 250.r,
+                                  width: 160.r,
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF051152),
                                     border: Border.all(

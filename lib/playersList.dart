@@ -18,8 +18,8 @@ class PLayersList extends StatefulWidget {
 
 class _PLayersListState extends State<PLayersList> {
   List<Player> lst_players_tmp = [];
-  bool called = false;
-  Color _borderColor = Colors.white;
+  bool called = false, _isOnSearch = false;
+  String _searchValue = "";
   @override
   Widget build(BuildContext context) {
     lst_players_tmp = widget.lst_players_tmp;
@@ -37,49 +37,88 @@ class _PLayersListState extends State<PLayersList> {
                 }),
             actions: [
               Padding(
-                  padding: EdgeInsets.only(right: 25.w),
-                  child: InkWell(
-                    onTap: () {
-                      widget.lst_players_tmp.isEmpty
-                          ? Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AddPlayer(
-                                  title: 'Add new Player',
-                                  lst_players_tmp: widget.lst_players_tmp,
-                                  playerTmp: Player(
-                                      id: 0,
-                                      fullName: "",
-                                      phoneNumber: 0,
-                                      hasPaid: false,
-                                      stripNumber: 0,
-                                      images_list: [],
-                                      profilePicture: "",
-                                      toPay: 0),
-                                ),
-                              ),
-                            ).then((value) {
-                              setState(() {
-                                lst_players_tmp = value;
-                              });
-                            })
-                          : 0;
-                    },
-                    child: Icon(
-                      widget.lst_players_tmp.isEmpty ? Icons.add : Icons.search,
-                    ),
-                  )),
+                padding: EdgeInsets.only(right: 25.w),
+                child: InkWell(
+                  onTap: () {
+                    if (widget.lst_players_tmp.isEmpty) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AddPlayer(
+                            title: 'Add new Player',
+                            lst_players_tmp: widget.lst_players_tmp,
+                            playerTmp: Player(
+                                id: 0,
+                                fullName: "",
+                                phoneNumber: 0,
+                                hasPaid: false,
+                                stripNumber: 0,
+                                images_list: [],
+                                profilePicture: "",
+                                toPay: 0),
+                          ),
+                        ),
+                      ).then((value) {
+                        setState(() {
+                          lst_players_tmp = value;
+                        });
+                      });
+                    } else {
+                      if (_isOnSearch) {
+                        setState(() {
+                          _isOnSearch = false;
+                        });
+                      } else {
+                        setState(() {
+                          _isOnSearch = true;
+                        });
+                      }
+                    }
+                  },
+                  child: Icon(
+                    widget.lst_players_tmp.isEmpty
+                        ? Icons.add
+                        : (_isOnSearch ? Icons.clear : Icons.search),
+                  ),
+                ),
+              ),
             ],
             centerTitle: true,
-            title: Text(
-              'Players List ',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w100,
-                fontFamily: 'Inter',
-                fontSize: 25.sp,
-              ),
-            ),
+            title: _isOnSearch
+                ? Container(
+                    alignment: Alignment.center,
+                    width: double.infinity,
+                    height: 40.r,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        prefix: Icon(Icons.search),
+                        hintText: 'Search...',
+                        border: InputBorder.none,
+                      ),
+                      onChanged: ((value) {
+                        setState(() {
+                          if (value != "") {
+                            _searchValue = value;
+                          } else {
+                            _searchValue = "";
+                          }
+                        });
+                      }),
+                    ),
+                  )
+                : Text(
+                    'Players List',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w100,
+                      fontFamily: 'Inter',
+                      fontSize: 25.sp,
+                    ),
+                  ),
           ),
           body: Stack(
             alignment: Alignment.topCenter,
@@ -103,148 +142,160 @@ class _PLayersListState extends State<PLayersList> {
                         ),
                       ),
                     )
-                  : IntrinsicGridView.vertical(
-                      columnCount: 2,
-                      children: widget.lst_players_tmp
-                          .map(
-                            (e) => Padding(
-                              padding: EdgeInsets.only(
-                                top: 25.r,
-                                right: 20.r,
-                                left: 20.r,
-                              ),
-                              child: GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => AddPlayer(
-                                        title:
-                                            '${e.fullName!.split(" ")[0]} Details',
-                                        lst_players_tmp: widget.lst_players_tmp,
-                                        playerTmp: Player(
-                                            id: e.id,
-                                            fullName: e.fullName,
-                                            phoneNumber: e.phoneNumber,
-                                            hasPaid: e.hasPaid,
-                                            stripNumber: e.stripNumber,
-                                            images_list: e.images_list,
-                                            profilePicture: e.profilePicture,
-                                            toPay: e.toPay),
-                                      ),
-                                    ),
-                                  ).then((value) {
-                                    setState(() {
-                                      lst_players_tmp = value;
-                                    });
-                                  });
-                                },
-                                child: Container(
-                                  height: 250.h,
-                                  width: 160.w,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF051152),
-                                    border: Border.all(
-                                        color: _borderColor, width: 1),
-                                    borderRadius: BorderRadius.circular(10),
+                  : _isOnSearch
+                      ? Container(
+                          width: 180,
+                          height: 180,
+                          color: Colors.pink,
+                        )
+                      : IntrinsicGridView.vertical(
+                          columnCount: 2,
+                          children: widget.lst_players_tmp
+                              .map(
+                                (e) => Padding(
+                                  padding: EdgeInsets.only(
+                                    top: 25.r,
+                                    right: 20.r,
+                                    left: 20.r,
                                   ),
-                                  child: Stack(
-                                    children: [
-                                      Align(
-                                        alignment: Alignment.center,
-                                        child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          child: Image.file(
-                                            File(e.profilePicture.toString()),
-                                            fit: BoxFit.cover,
-                                            height: 250.h,
-                                            width: 180.w,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => AddPlayer(
+                                            title:
+                                                '${e.fullName!.split(" ")[0]} Details',
+                                            lst_players_tmp:
+                                                widget.lst_players_tmp,
+                                            playerTmp: Player(
+                                                id: e.id,
+                                                fullName: e.fullName,
+                                                phoneNumber: e.phoneNumber,
+                                                hasPaid: e.hasPaid,
+                                                stripNumber: e.stripNumber,
+                                                images_list: e.images_list,
+                                                profilePicture:
+                                                    e.profilePicture,
+                                                toPay: e.toPay),
                                           ),
                                         ),
+                                      ).then((value) {
+                                        setState(() {
+                                          lst_players_tmp = value;
+                                        });
+                                      });
+                                    },
+                                    child: Container(
+                                      height: 250.r,
+                                      width: 160.r,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF051152),
+                                        border: Border.all(
+                                            color: Colors.white, width: 1),
+                                        borderRadius: BorderRadius.circular(10),
                                       ),
-                                      Align(
-                                        alignment: Alignment.center,
-                                        child: Container(
-                                          height: 250.h,
-                                          width: 160.w,
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                                colors: [
-                                                  const Color(0xFF010B40)
-                                                      .withOpacity(.22),
-                                                  const Color(0xFF010B40),
-                                                ],
-                                                begin: Alignment.topCenter,
-                                                end: Alignment.bottomCenter,
-                                                stops: const [0.6, 1.5]),
-                                            borderRadius:
-                                                BorderRadius.circular(10),
+                                      child: Stack(
+                                        children: [
+                                          Align(
+                                            alignment: Alignment.center,
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              child: Image.file(
+                                                File(e.profilePicture
+                                                    .toString()),
+                                                fit: BoxFit.cover,
+                                                height: 250.h,
+                                                width: 180.w,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment: Alignment.bottomCenter,
-                                        child: Padding(
-                                          padding: EdgeInsets.only(
-                                              bottom: 10.r,
-                                              left: 10.r,
-                                              right: 10.r),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            children: [
-                                              Container(
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  e.fullName.toString(),
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontFamily: 'Inter',
-                                                    fontSize: 17.sp,
-                                                  ),
-                                                ),
+                                          Align(
+                                            alignment: Alignment.center,
+                                            child: Container(
+                                              height: 250.h,
+                                              width: 160.w,
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                    colors: [
+                                                      const Color(0xFF010B40)
+                                                          .withOpacity(.22),
+                                                      const Color(0xFF010B40),
+                                                    ],
+                                                    begin: Alignment.topCenter,
+                                                    end: Alignment.bottomCenter,
+                                                    stops: const [0.6, 1.5]),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
                                               ),
-                                              SizedBox(
-                                                height: 5.r,
-                                              ),
-                                              Row(
+                                            ),
+                                          ),
+                                          Align(
+                                            alignment: Alignment.bottomCenter,
+                                            child: Padding(
+                                              padding: EdgeInsets.only(
+                                                  bottom: 10.r,
+                                                  left: 10.r,
+                                                  right: 10.r),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
                                                 children: [
-                                                  Expanded(
+                                                  Container(
+                                                    alignment:
+                                                        Alignment.centerLeft,
                                                     child: Text(
-                                                      '${e.images_list.length} photos',
+                                                      e.fullName.toString(),
                                                       style: TextStyle(
-                                                        color: Colors.white
-                                                            .withOpacity(0.7),
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                         fontFamily: 'Inter',
                                                         fontSize: 17.sp,
                                                       ),
                                                     ),
                                                   ),
-                                                  Text(
-                                                    '${e.toPay} dhs',
-                                                    style: TextStyle(
-                                                      color: const Color(
-                                                          0xFF7DFFA2),
-                                                      fontFamily: 'Inter',
-                                                      fontSize: 17.sp,
-                                                    ),
+                                                  SizedBox(
+                                                    height: 5.r,
                                                   ),
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          '${e.images_list.length} photos',
+                                                          style: TextStyle(
+                                                            color: Colors.white
+                                                                .withOpacity(
+                                                                    0.7),
+                                                            fontFamily: 'Inter',
+                                                            fontSize: 17.sp,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        '${e.toPay} dhs',
+                                                        style: TextStyle(
+                                                          color: const Color(
+                                                              0xFF7DFFA2),
+                                                          fontFamily: 'Inter',
+                                                          fontSize: 17.sp,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  )
                                                 ],
-                                              )
-                                            ],
+                                              ),
+                                            ),
                                           ),
-                                        ),
+                                        ],
                                       ),
-                                    ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                    ),
+                              )
+                              .toList(),
+                        ),
             ],
           ),
         ),
