@@ -76,7 +76,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Padding(
               padding: EdgeInsets.only(bottom: 20.h),
               child: Text(
-                'v 0.0.1',
+                'v 0.1.0',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 25.sp,

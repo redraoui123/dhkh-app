@@ -5,6 +5,7 @@ import 'package:dhkhapp/imageViewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter_bounce/flutter_bounce.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -719,8 +720,9 @@ class _AddPlayerState extends State<AddPlayer> {
                                 fontSize: 25.sp,
                               ),
                             ),
-                            InkWell(
-                              onTap: () {
+                            Bounce(
+                              duration: const Duration(milliseconds: 110),
+                              onPressed: () {
                                 setState(() {
                                   if (_tmpPaid) {
                                     _tmpPaid = false;

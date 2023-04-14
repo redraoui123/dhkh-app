@@ -4,6 +4,7 @@ import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'homeClient.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_bounce/flutter_bounce.dart';
 
 class Authenticate extends StatefulWidget {
   const Authenticate({super.key});
@@ -149,8 +150,9 @@ class _AuthenticateState extends State<Authenticate> {
             Positioned(
               top: MediaQuery.of(context).size.height - (55.h + 20),
               left: MediaQuery.of(context).size.width / 2 - (175.w / 2),
-              child: InkWell(
-                onTap: () {
+              child: Bounce(
+                duration: const Duration(milliseconds: 110),
+                onPressed: () {
                   if (_username == "admin" || _username == "Admin") {
                     // move to home
                     Navigator.push(context,
