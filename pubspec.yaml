@@ -46,6 +46,7 @@ dependencies:
   carousel_slider: ^4.2.1
   flutter_windowmanager: ^0.2.0
   flutter_bounce: ^1.1.0
+  cloud_firestore: ^4.5.1
 
 dev_dependencies:
   flutter_test:

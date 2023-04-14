@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:another_flushbar/flushbar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dhkhapp/imageViewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
@@ -9,6 +11,7 @@ import 'package:flutter_bounce/flutter_bounce.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'classes/Player.dart';
 
@@ -29,7 +32,7 @@ class _AddPlayerState extends State<AddPlayer> {
   int? _stripNumber = 0, _phoneNumber = 0, _topay = 0, _id = 0;
   bool _tmpPaid = false, loaded = false;
   final picker = ImagePicker();
-  String _imagePath = "", _fullName = "";
+  String _imageBytes = "", _fullName = "";
   List<String?> lst_photos = [];
 
   Random rnd = Random();
@@ -43,7 +46,7 @@ class _AddPlayerState extends State<AddPlayer> {
           _stripNumber = widget.playerTmp.stripNumber;
           _fullName = widget.playerTmp.fullName.toString();
           _phoneNumber = widget.playerTmp.phoneNumber;
-          _imagePath = widget.playerTmp.profilePicture.toString();
+          _imageBytes = widget.playerTmp.profilePicture.toString();
           lst_photos = widget.playerTmp.images_list;
           _topay = widget.playerTmp.toPay;
           loaded = true;
@@ -64,13 +67,52 @@ class _AddPlayerState extends State<AddPlayer> {
                     if (widget.title == "Add new Player") {
                       if (_fullName != "" &&
                           _phoneNumber != 0 &&
-                          _imagePath != "") {
-                        await addPlayer();
+                          _imageBytes != "") {
+                        Player player = Player(
+                            id: rnd.nextInt(999999),
+                            fullName: _fullName,
+                            phoneNumber: _phoneNumber,
+                            stripNumber: _stripNumber,
+                            profilePicture: _imageBytes,
+                            images_list: lst_photos,
+                            hasPaid: _tmpPaid,
+                            toPay: _topay);
+
+                        // show waiting dilog
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              child: Container(
+                                  alignment: Alignment.center,
+                                  width: 200.r,
+                                  height: 100.r,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF000B46),
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12.r),
+                                  ),
+                                  child: const CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 1.2,
+                                  )),
+                            );
+                          },
+                        );
+                        await createPlayer(player: player);
+                        // close loading screen
+                        Navigator.pop(context);
                         // ignore: use_build_context_synchronously
                         Navigator.pop(context, widget.lst_players_tmp);
                       } else if (_fullName != "" ||
                           _phoneNumber != 0 ||
-                          _imagePath != "") {
+                          _imageBytes != "") {
                         Flushbar(
                           messageText: Text(
                             "One or more values are required!",
@@ -92,8 +134,8 @@ class _AddPlayerState extends State<AddPlayer> {
                     else {
                       if (_fullName != "" &&
                           _phoneNumber != 0 &&
-                          _imagePath != "") {
-                        await updatePlayer(widget.playerTmp);
+                          _imageBytes != "") {
+                        //await updatePlayer(widget.playerTmp);
                         // ignore: use_build_context_synchronously
                         Navigator.pop(context, widget.lst_players_tmp);
                       }
@@ -105,7 +147,7 @@ class _AddPlayerState extends State<AddPlayer> {
                     icon: const Icon(Icons.delete),
                     onPressed: () async {
                       if (_id != 0) {
-                        await removePlayer(_id);
+                        //await removePlayer(_id);
                         // ignore: use_build_context_synchronously
                         Navigator.pop(context, widget.lst_players_tmp);
                       }
@@ -148,27 +190,35 @@ class _AddPlayerState extends State<AddPlayer> {
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            Container(
-                              height: 215.r,
-                              width: 215.r,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF051152),
-                                borderRadius: BorderRadius.circular(2100),
-                                border:
-                                    Border.all(color: Colors.white, width: 1),
+                            InkWell(
+                              onLongPress: () {
+                                setState(() {
+                                  _imageBytes = "";
+                                });
+                              },
+                              child: Container(
+                                height: 215.r,
+                                width: 215.r,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF051152),
+                                  borderRadius: BorderRadius.circular(2100),
+                                  border:
+                                      Border.all(color: Colors.white, width: 1),
+                                ),
+                                child: _imageBytes != ""
+                                    ? ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(2100),
+                                        child: Image.memory(
+                                          base64Decode(_imageBytes),
+                                          fit: BoxFit.cover,
+                                        ))
+                                    : Icon(
+                                        Icons.person,
+                                        color: Colors.white,
+                                        size: 80.r,
+                                      ),
                               ),
-                              child: _imagePath != ""
-                                  ? ClipRRect(
-                                      borderRadius: BorderRadius.circular(2100),
-                                      child: Image.file(
-                                        File(_imagePath),
-                                        fit: BoxFit.cover,
-                                      ))
-                                  : Icon(
-                                      Icons.person,
-                                      color: Colors.white,
-                                      size: 80.r,
-                                    ),
                             ),
                             Align(
                               alignment: Alignment.topLeft,
@@ -326,7 +376,9 @@ class _AddPlayerState extends State<AddPlayer> {
                                         );
                                         if (croppedFile != null) {
                                           setState(() {
-                                            _imagePath = croppedFile.path;
+                                            // convert image to bytes (string)
+                                            _imageBytes =
+                                                imageToBase64(croppedFile);
                                           });
                                         }
                                       }
@@ -572,7 +624,10 @@ class _AddPlayerState extends State<AddPlayer> {
                                           if (pickedFiles != null) {
                                             for (XFile image in pickedFiles) {
                                               setState(() {
-                                                lst_photos.add(image.path);
+                                                // add base64 strings of images
+                                                lst_photos.add(
+                                                    convertXFileToBase64(image)
+                                                        .toString());
                                               });
                                             }
                                           }
@@ -773,41 +828,32 @@ class _AddPlayerState extends State<AddPlayer> {
     );
   }
 
-  Future<void> addPlayer() async {
-    Player player = Player(
-        id: rnd.nextInt(999999),
-        fullName: _fullName,
-        phoneNumber: _phoneNumber,
-        stripNumber: _stripNumber,
-        profilePicture: _imagePath,
-        images_list: lst_photos,
-        hasPaid: _tmpPaid,
-        toPay: _topay);
-    widget.lst_players_tmp.add(player);
+  String imageToBase64(File? image) {
+    List<int> imageBytes = image!.readAsBytesSync();
+    String base64Image = base64Encode(imageBytes);
+    return base64Image;
   }
 
-// error still here
+  Future<String> convertXFileToBase64(XFile xfile) async {
+    // Get the path of the XFile object
+    String filePath = xfile.path;
 
-  Future<void> updatePlayer(Player oldplayer) async {
-    Player newplayer = Player(
-        id: oldplayer.id,
-        fullName: _fullName,
-        phoneNumber: _phoneNumber,
-        stripNumber: _stripNumber,
-        profilePicture: _imagePath,
-        images_list: lst_photos,
-        hasPaid: _tmpPaid,
-        toPay: _topay);
+    // Read the bytes of the file
+    List<int> fileBytes = File(filePath).readAsBytesSync();
 
-    int index = widget.lst_players_tmp
-        .indexWhere((element) => element.id == oldplayer.id);
+    // Convert the bytes to a string
+    String fileContent = String.fromCharCodes(fileBytes);
 
-    setState(() {
-      widget.lst_players_tmp[index] = newplayer;
-    });
+    // Return the string
+    return fileContent;
   }
 
-  Future<void> removePlayer(int? id) async {
-    widget.lst_players_tmp.removeWhere((element) => element.id == id);
+  ///// FIREBASE FUNCTIONS
+  Future createPlayer({required Player player}) async {
+    // Reference to document
+    final docPlayer = FirebaseFirestore.instance.collection('players').doc(
+        "${player.fullName!.split(' ')[0]}_${player.fullName!.split(' ')[1]}");
+
+    await docPlayer.set(player.toMap());
   }
 }

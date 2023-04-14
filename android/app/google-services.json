@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "594399653373",
+    "project_id": "dhkhapp",
+    "storage_bucket": "dhkhapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:594399653373:android:f6f50dbd4aafdff6c67d94",
+        "android_client_info": {
+          "package_name": "com.example.dhkhapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "594399653373-b3jid45s8dkh3g4hf2cqht6opaigmejr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSYZY3ZmFTRiQrOntNbCLCeOh3W_flmiI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "594399653373-b3jid45s8dkh3g4hf2cqht6opaigmejr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

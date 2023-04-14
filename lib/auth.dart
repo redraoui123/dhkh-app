@@ -15,7 +15,7 @@ class Authenticate extends StatefulWidget {
 
 class _AuthenticateState extends State<Authenticate> {
   bool _isobscure = true;
-  String _lockImage = "images/lock_off.png", _username = "";
+  String _lockImage = "images/lock_off.png", _username = "", _password = "";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -141,7 +141,11 @@ class _AuthenticateState extends State<Authenticate> {
                             fontSize: 20.sp,
                             color: Colors.white.withOpacity(0.5),
                           )),
-                      onChanged: (val) {},
+                      onChanged: (val) {
+                        setState(() {
+                          val != "" ? _password = val : "";
+                        });
+                      },
                     ),
                   ),
                 ],
@@ -153,12 +157,11 @@ class _AuthenticateState extends State<Authenticate> {
               child: Bounce(
                 duration: const Duration(milliseconds: 110),
                 onPressed: () {
-                  if (_username == "admin" || _username == "Admin") {
-                    // move to home
+                  if ((_username == "admin" || _username == "Admin") &&
+                      _password == "1955") {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) => HomeAdmin()));
                   } else {
-                    // move to home
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) => HomeClient()));
                   }

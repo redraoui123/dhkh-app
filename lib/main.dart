@@ -4,8 +4,14 @@ import 'package:dhkhapp/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_windowmanager/flutter_windowmanager.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
+  // initialize firebase
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+// prevent screenshot
   runApp(const MyApp());
   WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
     if (Platform.isAndroid) {

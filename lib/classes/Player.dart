@@ -19,4 +19,17 @@ class Player {
       required this.images_list,
       required this.hasPaid,
       required this.toPay});
+
+  Map<String, dynamic> toMap() {
+    return {
+      '_id': id,
+      '_fullName': fullName,
+      '_phoneNumber': phoneNumber,
+      '_stripNumber': stripNumber,
+      '_profilePicture': profilePicture,
+      '_imageList': images_list,
+      '_hasPaid': hasPaid,
+      '_toPay': toPay,
+    };
+  }
 }
