@@ -12,6 +12,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 import 'classes/Player.dart';
 
@@ -74,7 +75,7 @@ class _AddPlayerState extends State<AddPlayer> {
                             phoneNumber: _phoneNumber,
                             stripNumber: _stripNumber,
                             profilePicture: _imageBytes,
-                            images_list: lst_photos,
+                            images_list: await _imagelistBase64(lst_photos),
                             hasPaid: _tmpPaid,
                             toPay: _topay);
 
@@ -87,21 +88,38 @@ class _AddPlayerState extends State<AddPlayer> {
                                 borderRadius: BorderRadius.circular(12.r),
                               ),
                               child: Container(
-                                  alignment: Alignment.center,
-                                  width: 200.r,
-                                  height: 100.r,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF000B46),
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12.r),
-                                  ),
-                                  child: const CircularProgressIndicator(
+                                alignment: Alignment.center,
+                                height: 120.r,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF000B46),
+                                  border: Border.all(
                                     color: Colors.white,
-                                    strokeWidth: 1.2,
-                                  )),
+                                    width: 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Please Wait',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w100,
+                                        fontFamily: 'Inter',
+                                        fontSize: 20.sp,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 20.r,
+                                    ),
+                                    const CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 1.2,
+                                    )
+                                  ],
+                                ),
+                              ),
                             );
                           },
                         );
@@ -115,7 +133,7 @@ class _AddPlayerState extends State<AddPlayer> {
                           _imageBytes != "") {
                         Flushbar(
                           messageText: Text(
-                            "One or more values are required!",
+                            "One or more values are empty!",
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w100,
@@ -623,11 +641,22 @@ class _AddPlayerState extends State<AddPlayer> {
                                               await picker.pickMultiImage();
                                           if (pickedFiles != null) {
                                             for (XFile image in pickedFiles) {
-                                              setState(() {
+                                              setState(() async {
+                                                //compress img
+                                                final imageBytes =
+                                                    await image.readAsBytes();
+                                                final compressedBytes =
+                                                    await FlutterImageCompress
+                                                        .compressWithList(
+                                                  imageBytes,
+                                                  minHeight: 300,
+                                                  minWidth: 300,
+                                                  quality: 90,
+                                                  rotate: 0,
+                                                );
                                                 // add base64 strings of images
                                                 lst_photos.add(
-                                                    convertXFileToBase64(image)
-                                                        .toString());
+                                                    compressedBytes.toString());
                                               });
                                             }
                                           }
@@ -684,6 +713,11 @@ class _AddPlayerState extends State<AddPlayer> {
                                           borderRadius:
                                               BorderRadius.circular(10.r),
                                           child: InkWell(
+                                            onLongPress: () {
+                                              setState(() {
+                                                lst_photos.removeAt(index - 1);
+                                              });
+                                            },
                                             onTap: () {
                                               Navigator.push(
                                                 context,
@@ -826,6 +860,16 @@ class _AddPlayerState extends State<AddPlayer> {
         ),
       ),
     );
+  }
+
+  Future<List<String?>> _imagelistBase64(List<String?> lst_photos) async {
+    List<String?> base64images = [];
+
+    for (String? item in lst_photos) {
+      base64images.add(imageToBase64(File(item.toString())));
+    }
+
+    return base64images;
   }
 
   String imageToBase64(File? image) {

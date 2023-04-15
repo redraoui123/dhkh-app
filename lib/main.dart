@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:delayed_display/delayed_display.dart';
 
 void main() async {
   // initialize firebase
@@ -70,10 +71,16 @@ class _MyHomePageState extends State<MyHomePage> {
                     MaterialPageRoute(
                         builder: (context) => const Authenticate()));
               },
-              child: Image.asset(
-                'images/mylogo.png',
-                width: 266.w,
-                height: 266.h,
+              child: DelayedDisplay(
+                delay: const Duration(milliseconds: 400),
+                child: Hero(
+                  tag: 'mylogo',
+                  child: Image.asset(
+                    'images/mylogo.png',
+                    width: 266.w,
+                    height: 266.h,
+                  ),
+                ),
               ),
             ),
           ),
@@ -81,12 +88,15 @@ class _MyHomePageState extends State<MyHomePage> {
             alignment: Alignment.bottomCenter,
             child: Padding(
               padding: EdgeInsets.only(bottom: 20.h),
-              child: Text(
-                'v 0.1.0',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 25.sp,
-                  fontFamily: 'Inter',
+              child: DelayedDisplay(
+                delay: const Duration(seconds: 1),
+                child: Text(
+                  'v 0.1.0',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 25.sp,
+                    fontFamily: 'Inter',
+                  ),
                 ),
               ),
             ),
