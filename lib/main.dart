@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dhkhapp/auth.dart';
+import 'package:dhkhapp/tempTEST.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_windowmanager/flutter_windowmanager.dart';
@@ -70,6 +71,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     context,
                     MaterialPageRoute(
                         builder: (context) => const Authenticate()));
+
+                // Navigator.push(context,
+                //     MaterialPageRoute(builder: (context) => const TMPTEST()));
               },
               child: DelayedDisplay(
                 delay: const Duration(milliseconds: 400),

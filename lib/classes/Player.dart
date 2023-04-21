@@ -1,7 +1,6 @@
 import 'package:dhkhapp/main.dart';
 
 class Player {
-  final int? id;
   final String? fullName;
   final int? phoneNumber;
   final int? stripNumber;
@@ -11,8 +10,7 @@ class Player {
   final int? toPay;
 
   Player(
-      {required this.id,
-      required this.fullName,
+      {required this.fullName,
       required this.phoneNumber,
       required this.stripNumber,
       required this.profilePicture,
@@ -22,7 +20,6 @@ class Player {
 
   Map<String, dynamic> toMap() {
     return {
-      '_id': id,
       '_fullName': fullName,
       '_phoneNumber': phoneNumber,
       '_stripNumber': stripNumber,

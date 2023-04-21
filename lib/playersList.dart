@@ -48,7 +48,6 @@ class _PLayersListState extends State<PLayersList> {
                             title: 'Add new Player',
                             lst_players_tmp: widget.lst_players_tmp,
                             playerTmp: Player(
-                                id: 0,
                                 fullName: "",
                                 phoneNumber: 0,
                                 hasPaid: false,
@@ -169,7 +168,6 @@ class _PLayersListState extends State<PLayersList> {
                                             lst_players_tmp:
                                                 widget.lst_players_tmp,
                                             playerTmp: Player(
-                                                id: e.id,
                                                 fullName: e.fullName,
                                                 phoneNumber: e.phoneNumber,
                                                 hasPaid: e.hasPaid,

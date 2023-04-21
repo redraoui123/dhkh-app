@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delayed_display/delayed_display.dart';
 import 'package:dhkhapp/addPlayer.dart';
+import 'package:dhkhapp/classes/Admin.dart';
+import 'package:dhkhapp/classes/functions.dart';
 import 'package:dhkhapp/playersList.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
@@ -25,13 +28,11 @@ class _HomeAdminState extends State<HomeAdmin> {
   final _advancedDrawerController = AdvancedDrawerController();
   int _homeScore = 0, _awayScore = 0;
   String _awayName = "-",
-      _image_64 = "",
       _awayImagePath = "",
       _adminImagePath = "",
       _adminName = "NAME",
-      _adminPhone = "PHONE_NUMBER",
-      _adminVersion = "APP_VERSION";
-  bool _changed = false;
+      _adminPhone = "PHONE_NUMBER";
+  bool _changed = false, _adminChanged = false;
   List<Player> lst_players_global = [];
   final picker = ImagePicker();
   @override
@@ -113,6 +114,7 @@ class _HomeAdminState extends State<HomeAdmin> {
                           if (croppedFile != null) {
                             setState(() {
                               _adminImagePath = croppedFile.path;
+                              _adminChanged = true;
                             });
                           }
                         }
@@ -169,7 +171,6 @@ class _HomeAdminState extends State<HomeAdmin> {
                                 },
                                 textAlign: TextAlign.center,
                                 textInputAction: TextInputAction.done,
-                                keyboardType: TextInputType.number,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontFamily: 'Inter',
@@ -197,6 +198,8 @@ class _HomeAdminState extends State<HomeAdmin> {
                                     val != ""
                                         ? _adminName = val
                                         : _adminName = "NAME";
+
+                                    _adminChanged = true;
                                   });
                                 },
                               ),
@@ -278,6 +281,8 @@ class _HomeAdminState extends State<HomeAdmin> {
                                     val != ""
                                         ? _adminPhone = val
                                         : _adminPhone = "PHONE_NUMBER";
+
+                                    _adminChanged = true;
                                   });
                                 },
                               ),
@@ -297,90 +302,46 @@ class _HomeAdminState extends State<HomeAdmin> {
                   ),
                 ),
                 Expanded(
-                  child: Container(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: EdgeInsets.only(bottom: 15.h),
-                      child: InkWell(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return Dialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12.r),
-                                ),
-                                child: Container(
-                                  width: 200.r,
-                                  height: 100.r,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF000B46),
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 1,
+                  child: InkWell(
+                      onTap: () async {
+                        Admin admin = Admin(
+                          name: _adminName,
+                          phone: _adminPhone,
+                          // ignore: use_build_context_synchronously
+                          picture: await Functions.uploadImage(
+                              _adminImagePath, context, 'admin photo'),
+                        );
+
+                        await Functions.saveAdminInfo(
+                            admin: admin, context: context);
+                      },
+                      child: _adminChanged
+                          ? Container(
+                              alignment: Alignment.bottomCenter,
+                              child: Padding(
+                                  padding: EdgeInsets.only(bottom: 15.h),
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    width: 200.r,
+                                    height: 45.r,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: const Color(0xFF0000FE),
                                     ),
-                                    borderRadius: BorderRadius.circular(12.r),
-                                  ),
-                                  child: Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 40.r),
-                                    child: TextFormField(
-                                      onEditingComplete: () {
-                                        Navigator.pop(context);
-                                      },
-                                      textAlign: TextAlign.center,
-                                      textInputAction: TextInputAction.done,
-                                      keyboardType: TextInputType.number,
+                                    child: Text(
+                                      'Save Changes',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontFamily: 'Inter',
-                                        fontSize: 26.sp,
+                                        fontSize: 20.sp,
                                       ),
-                                      decoration: InputDecoration(
-                                          fillColor: Colors.transparent,
-                                          filled: true,
-                                          enabledBorder:
-                                              const UnderlineInputBorder(
-                                            borderSide: BorderSide(
-                                                color: Colors.white, width: 1),
-                                          ),
-                                          focusedBorder:
-                                              const UnderlineInputBorder(
-                                            borderSide: BorderSide(
-                                                color: Colors.white, width: 2),
-                                          ),
-                                          labelText: 'app version',
-                                          labelStyle: TextStyle(
-                                            fontFamily: 'Inter',
-                                            fontSize: 20.sp,
-                                            color:
-                                                Colors.white.withOpacity(0.5),
-                                          )),
-                                      onChanged: (val) {
-                                        setState(() {
-                                          val != ""
-                                              ? _adminVersion = val
-                                              : _adminVersion = "APP_VERSION";
-                                        });
-                                      },
                                     ),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                        child: Text(
-                          _adminVersion,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'Inter',
-                            fontSize: 25.sp,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                                  )))
+                          : Container()),
                 ),
               ],
             ),
@@ -424,7 +385,6 @@ class _HomeAdminState extends State<HomeAdmin> {
                               title: 'Add new Player',
                               lst_players_tmp: lst_players_global,
                               playerTmp: Player(
-                                  id: 0,
                                   fullName: "",
                                   hasPaid: false,
                                   images_list: [],
@@ -948,6 +908,60 @@ class _HomeAdminState extends State<HomeAdmin> {
     );
   }
 
+  String imageToBase64(File? image) {
+    List<int> imageBytes = image!.readAsBytesSync();
+    String base64Image = base64Encode(imageBytes);
+    return base64Image;
+  }
+
+  _showWaitingDialog() {
+    // show waiting dilog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Container(
+            alignment: Alignment.center,
+            height: 120.r,
+            decoration: BoxDecoration(
+              color: const Color(0xFF000B46),
+              border: Border.all(
+                color: Colors.white,
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Please Wait',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w100,
+                    fontFamily: 'Inter',
+                    fontSize: 20.sp,
+                  ),
+                ),
+                SizedBox(
+                  height: 20.r,
+                ),
+                const CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 1.2,
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+  // local functions
+
   String calculatePrices() {
     int price = 0;
     for (var player in lst_players_global) {
@@ -962,11 +976,5 @@ class _HomeAdminState extends State<HomeAdmin> {
       totalPhotos += player.images_list.length;
     }
     return totalPhotos.toString();
-  }
-
-  String imageToBase64(File? image) {
-    List<int> imageBytes = image!.readAsBytesSync();
-    String base64Image = base64Encode(imageBytes);
-    return base64Image;
   }
 }

@@ -3,6 +3,8 @@ import 'dart:io';
 import 'dart:math';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dhkhapp/classes/functions.dart';
+import 'package:dhkhapp/classes/photo.dart';
 import 'package:dhkhapp/imageViewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
@@ -30,24 +32,23 @@ class AddPlayer extends StatefulWidget {
 }
 
 class _AddPlayerState extends State<AddPlayer> {
-  int? _stripNumber = 0, _phoneNumber = 0, _topay = 0, _id = 0;
+  int? _stripNumber = 0, _phoneNumber = 0, _topay = 0, _id = 0, currImage = 0;
   bool _tmpPaid = false, loaded = false;
   final picker = ImagePicker();
-  String _imageBytes = "", _fullName = "";
+  String _profilePicture = "", _fullName = "";
   List<String?> lst_photos = [];
 
   Random rnd = Random();
-
+  List<String> lst_photos_base64 = [];
   @override
   Widget build(BuildContext context) {
     if (widget.title != 'Add new Player') {
       if (!loaded) {
         setState(() {
-          _id = widget.playerTmp.id;
           _stripNumber = widget.playerTmp.stripNumber;
           _fullName = widget.playerTmp.fullName.toString();
           _phoneNumber = widget.playerTmp.phoneNumber;
-          _imageBytes = widget.playerTmp.profilePicture.toString();
+          _profilePicture = widget.playerTmp.profilePicture.toString();
           lst_photos = widget.playerTmp.images_list;
           _topay = widget.playerTmp.toPay;
           loaded = true;
@@ -68,69 +69,40 @@ class _AddPlayerState extends State<AddPlayer> {
                     if (widget.title == "Add new Player") {
                       if (_fullName != "" &&
                           _phoneNumber != 0 &&
-                          _imageBytes != "") {
+                          _profilePicture != "") {
+                        // upload profile picture to imggur and return link
+                        String profilePictureLink = await Functions.uploadImage(
+                            _profilePicture, context, 'profile picture');
+
+                        // upload list images to imggur and return link
+                        List<String?> playerImages = [];
+                        int cpt = 0;
+                        for (String? item in lst_photos) {
+                          cpt++;
+                          // ignore: use_build_context_synchronously
+                          playerImages.add(await Functions.uploadImage(
+                              item.toString(), context, 'image $cpt'));
+                        }
+
+                        // create player after retrieving photos ids
                         Player player = Player(
-                            id: rnd.nextInt(999999),
                             fullName: _fullName,
                             phoneNumber: _phoneNumber,
                             stripNumber: _stripNumber,
-                            profilePicture: _imageBytes,
-                            images_list: await _imagelistBase64(lst_photos),
+                            profilePicture: profilePictureLink,
+                            images_list: playerImages,
                             hasPaid: _tmpPaid,
                             toPay: _topay);
 
-                        // show waiting dilog
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return Dialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                              child: Container(
-                                alignment: Alignment.center,
-                                height: 120.r,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF000B46),
-                                  border: Border.all(
-                                    color: Colors.white,
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12.r),
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Please Wait',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w100,
-                                        fontFamily: 'Inter',
-                                        fontSize: 20.sp,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: 20.r,
-                                    ),
-                                    const CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 1.2,
-                                    )
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                        await createPlayer(player: player);
-                        // close loading screen
+                        showWaitingDialog('Uploading Player!');
+                        //insert player
+                        await Functions.createPlayer(player: player);
                         Navigator.pop(context);
                         // ignore: use_build_context_synchronously
                         Navigator.pop(context, widget.lst_players_tmp);
                       } else if (_fullName != "" ||
                           _phoneNumber != 0 ||
-                          _imageBytes != "") {
+                          _profilePicture != "") {
                         Flushbar(
                           messageText: Text(
                             "One or more values are empty!",
@@ -152,7 +124,7 @@ class _AddPlayerState extends State<AddPlayer> {
                     else {
                       if (_fullName != "" &&
                           _phoneNumber != 0 &&
-                          _imageBytes != "") {
+                          _profilePicture != "") {
                         //await updatePlayer(widget.playerTmp);
                         // ignore: use_build_context_synchronously
                         Navigator.pop(context, widget.lst_players_tmp);
@@ -211,7 +183,7 @@ class _AddPlayerState extends State<AddPlayer> {
                             InkWell(
                               onLongPress: () {
                                 setState(() {
-                                  _imageBytes = "";
+                                  _profilePicture = "";
                                 });
                               },
                               child: Container(
@@ -223,12 +195,12 @@ class _AddPlayerState extends State<AddPlayer> {
                                   border:
                                       Border.all(color: Colors.white, width: 1),
                                 ),
-                                child: _imageBytes != ""
+                                child: _profilePicture != ""
                                     ? ClipRRect(
                                         borderRadius:
                                             BorderRadius.circular(2100),
-                                        child: Image.memory(
-                                          base64Decode(_imageBytes),
+                                        child: Image.file(
+                                          File(_profilePicture),
                                           fit: BoxFit.cover,
                                         ))
                                     : Icon(
@@ -395,8 +367,7 @@ class _AddPlayerState extends State<AddPlayer> {
                                         if (croppedFile != null) {
                                           setState(() {
                                             // convert image to bytes (string)
-                                            _imageBytes =
-                                                imageToBase64(croppedFile);
+                                            _profilePicture = croppedFile.path;
                                           });
                                         }
                                       }
@@ -641,22 +612,10 @@ class _AddPlayerState extends State<AddPlayer> {
                                               await picker.pickMultiImage();
                                           if (pickedFiles != null) {
                                             for (XFile image in pickedFiles) {
-                                              setState(() async {
-                                                //compress img
-                                                final imageBytes =
-                                                    await image.readAsBytes();
-                                                final compressedBytes =
-                                                    await FlutterImageCompress
-                                                        .compressWithList(
-                                                  imageBytes,
-                                                  minHeight: 300,
-                                                  minWidth: 300,
-                                                  quality: 90,
-                                                  rotate: 0,
-                                                );
-                                                // add base64 strings of images
-                                                lst_photos.add(
-                                                    compressedBytes.toString());
+                                              // convert to base64 first and add it to list
+                                              setState(() {
+                                                lst_photos
+                                                    .add(image.path.toString());
                                               });
                                             }
                                           }
@@ -716,6 +675,8 @@ class _AddPlayerState extends State<AddPlayer> {
                                             onLongPress: () {
                                               setState(() {
                                                 lst_photos.removeAt(index - 1);
+                                                lst_photos_base64
+                                                    .removeAt(index - 1);
                                               });
                                             },
                                             onTap: () {
@@ -752,7 +713,8 @@ class _AddPlayerState extends State<AddPlayer> {
                                         if (pickedFiles != null) {
                                           for (XFile image in pickedFiles) {
                                             setState(() {
-                                              lst_photos.add(image.path);
+                                              lst_photos
+                                                  .add(image.path.toString());
                                             });
                                           }
                                         }
@@ -862,42 +824,50 @@ class _AddPlayerState extends State<AddPlayer> {
     );
   }
 
-  Future<List<String?>> _imagelistBase64(List<String?> lst_photos) async {
-    List<String?> base64images = [];
-
-    for (String? item in lst_photos) {
-      base64images.add(imageToBase64(File(item.toString())));
-    }
-
-    return base64images;
-  }
-
-  String imageToBase64(File? image) {
-    List<int> imageBytes = image!.readAsBytesSync();
-    String base64Image = base64Encode(imageBytes);
-    return base64Image;
-  }
-
-  Future<String> convertXFileToBase64(XFile xfile) async {
-    // Get the path of the XFile object
-    String filePath = xfile.path;
-
-    // Read the bytes of the file
-    List<int> fileBytes = File(filePath).readAsBytesSync();
-
-    // Convert the bytes to a string
-    String fileContent = String.fromCharCodes(fileBytes);
-
-    // Return the string
-    return fileContent;
-  }
-
-  ///// FIREBASE FUNCTIONS
-  Future createPlayer({required Player player}) async {
-    // Reference to document
-    final docPlayer = FirebaseFirestore.instance.collection('players').doc(
-        "${player.fullName!.split(' ')[0]}_${player.fullName!.split(' ')[1]}");
-
-    await docPlayer.set(player.toMap());
+  void showWaitingDialog(String message) {
+    // show waiting dilog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Container(
+            alignment: Alignment.center,
+            height: 120.r,
+            decoration: BoxDecoration(
+              color: const Color(0xFF000B46),
+              border: Border.all(
+                color: Colors.white,
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  message,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w100,
+                    fontFamily: 'Inter',
+                    fontSize: 20.sp,
+                  ),
+                ),
+                SizedBox(
+                  height: 20.r,
+                ),
+                const CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 1.2,
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }
