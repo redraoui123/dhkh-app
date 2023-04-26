@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delayed_display/delayed_display.dart';
 import 'package:dhkhapp/addPlayer.dart';
 import 'package:dhkhapp/classes/Admin.dart';
+import 'package:dhkhapp/classes/FootbalMatch.dart';
 import 'package:dhkhapp/classes/functions.dart';
 import 'package:dhkhapp/playersList.dart';
 import 'package:flutter/material.dart';
@@ -35,10 +36,30 @@ class _HomeAdminState extends State<HomeAdmin> {
   bool _changed = false, _adminChanged = false;
   List<Player> lst_players_global = [];
   final picker = ImagePicker();
+
+  void getAdminInfo() async {
+    Admin? _admin = await Functions.getAdminInfo();
+
+    if (_admin != null) {
+      setState(() {
+        _adminImagePath = _admin.picture!;
+        _adminName = _admin.name!;
+        _adminPhone = _admin.phone!;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getAdminInfo();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Color(0xFF030A32),
+      color: const Color(0xFF030A32),
       child: SafeArea(
         child: AdvancedDrawer(
           controller: _advancedDrawerController,
@@ -132,10 +153,15 @@ class _HomeAdminState extends State<HomeAdmin> {
                                 color: Colors.white,
                                 size: 40.r,
                               )
-                            : Image.file(
-                                File(_adminImagePath),
-                                fit: BoxFit.cover,
-                              ),
+                            : _adminImagePath.startsWith('https')
+                                ? Image.network(
+                                    _adminImagePath,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Image.file(
+                                    File(_adminImagePath),
+                                    fit: BoxFit.cover,
+                                  ),
                       ),
                     ),
                   ),
@@ -314,6 +340,10 @@ class _HomeAdminState extends State<HomeAdmin> {
 
                         await Functions.saveAdminInfo(
                             admin: admin, context: context);
+
+                        setState(() {
+                          _adminChanged = false;
+                        });
                       },
                       child: _adminChanged
                           ? Container(
@@ -588,8 +618,18 @@ class _HomeAdminState extends State<HomeAdmin> {
                       ),
                       _changed
                           ? InkWell(
-                              onTap: () {
+                              onTap: () async {
+                                //save match
+                                FootbalMatch match = FootbalMatch(
+                                    awayName: _awayName,
+                                    awayScore: _awayScore.toString(),
+                                    teamLogo: _awayImagePath,
+                                    video: '');
+
+                                await Functions.createMatch(
+                                    match: match, context: context);
                                 setState(() {
+                                  //change changed state
                                   _changed = false;
                                 });
                               },
@@ -906,12 +946,6 @@ class _HomeAdminState extends State<HomeAdmin> {
         ),
       ),
     );
-  }
-
-  String imageToBase64(File? image) {
-    List<int> imageBytes = image!.readAsBytesSync();
-    String base64Image = base64Encode(imageBytes);
-    return base64Image;
   }
 
   _showWaitingDialog() {

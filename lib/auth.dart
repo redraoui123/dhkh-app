@@ -4,7 +4,6 @@ import 'package:dhkhapp/homeAdmin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
-import 'homeClient.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bounce/flutter_bounce.dart';
 
@@ -185,18 +184,10 @@ class _AuthenticateState extends State<Authenticate> {
                       duration: const Duration(seconds: 2),
                     ).show(context);
                   } else {
-                    if ((_username == "admin" || _username == "Admin") &&
-                        _password == "1955") {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const HomeAdmin()));
-                    } else {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const HomeClient()));
-                    }
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const HomeAdmin()));
                   }
                 },
                 child: DelayedDisplay(

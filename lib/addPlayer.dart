@@ -39,7 +39,6 @@ class _AddPlayerState extends State<AddPlayer> {
   List<String?> lst_photos = [];
 
   Random rnd = Random();
-  List<String> lst_photos_base64 = [];
   @override
   Widget build(BuildContext context) {
     if (widget.title != 'Add new Player') {
@@ -97,6 +96,7 @@ class _AddPlayerState extends State<AddPlayer> {
                         showWaitingDialog('Uploading Player!');
                         //insert player
                         await Functions.createPlayer(player: player);
+                        // ignore: use_build_context_synchronously
                         Navigator.pop(context);
                         // ignore: use_build_context_synchronously
                         Navigator.pop(context, widget.lst_players_tmp);
@@ -289,14 +289,16 @@ class _AddPlayerState extends State<AddPlayer> {
                                                             .withOpacity(0.5),
                                                       )),
                                                   onChanged: (val) {
-                                                    setState(() {
-                                                      if (val != "") {
-                                                        _stripNumber =
-                                                            int.parse(val);
-                                                      } else {
-                                                        _stripNumber = 0;
-                                                      }
-                                                    });
+                                                    try {
+                                                      setState(() {
+                                                        if (val != "") {
+                                                          _stripNumber =
+                                                              int.parse(val);
+                                                        } else {
+                                                          _stripNumber = 0;
+                                                        }
+                                                      });
+                                                    } catch (e) {}
                                                   },
                                                 ),
                                               ),
@@ -418,13 +420,15 @@ class _AddPlayerState extends State<AddPlayer> {
                                 color: Colors.white.withOpacity(0.5),
                               )),
                           onChanged: (val) {
-                            setState(() {
-                              if (val != "") {
-                                _fullName = val;
-                              } else {
-                                _fullName = "";
-                              }
-                            });
+                            try {
+                              setState(() {
+                                if (val != "") {
+                                  _fullName = val;
+                                } else {
+                                  _fullName = "";
+                                }
+                              });
+                            } catch (e) {}
                           },
                         ),
                       ),
@@ -462,13 +466,15 @@ class _AddPlayerState extends State<AddPlayer> {
                                 color: Colors.white.withOpacity(0.5),
                               )),
                           onChanged: (val) {
-                            setState(() {
-                              if (val != "") {
-                                _phoneNumber = int.parse(val);
-                              } else {
-                                _phoneNumber = 0;
-                              }
-                            });
+                            try {
+                              setState(() {
+                                if (val != "") {
+                                  _phoneNumber = int.parse(val);
+                                } else {
+                                  _phoneNumber = 0;
+                                }
+                              });
+                            } catch (e) {}
                           },
                         ),
                       ),
@@ -551,15 +557,17 @@ class _AddPlayerState extends State<AddPlayer> {
                                                       .withOpacity(0.5),
                                                 )),
                                             onChanged: (val) {
-                                              if (val != "") {
-                                                setState(() {
-                                                  _topay = int.parse(val);
-                                                });
-                                              } else {
-                                                setState(() {
-                                                  _topay = 0;
-                                                });
-                                              }
+                                              try {
+                                                if (val != "") {
+                                                  setState(() {
+                                                    _topay = int.parse(val);
+                                                  });
+                                                } else {
+                                                  setState(() {
+                                                    _topay = 0;
+                                                  });
+                                                }
+                                              } catch (e) {}
                                             },
                                           ),
                                         ),
@@ -675,8 +683,6 @@ class _AddPlayerState extends State<AddPlayer> {
                                             onLongPress: () {
                                               setState(() {
                                                 lst_photos.removeAt(index - 1);
-                                                lst_photos_base64
-                                                    .removeAt(index - 1);
                                               });
                                             },
                                             onTap: () {

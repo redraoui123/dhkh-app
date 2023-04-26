@@ -1,7 +1,8 @@
 import 'dart:io';
 
+import 'package:another_flushbar/flushbar.dart';
 import 'package:dhkhapp/auth.dart';
-import 'package:dhkhapp/tempTEST.dart';
+import 'package:dhkhapp/classes/functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_windowmanager/flutter_windowmanager.dart';
@@ -94,12 +95,32 @@ class _MyHomePageState extends State<MyHomePage> {
               padding: EdgeInsets.only(bottom: 20.h),
               child: DelayedDisplay(
                 delay: const Duration(seconds: 1),
-                child: Text(
-                  'v 0.1.0',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 25.sp,
-                    fontFamily: 'Inter',
+                child: InkWell(
+                  onTap: () async {
+                    await Functions.deleteAllImages(
+                        '6ad38cb939406bd26f8f0137dc07c39cc0992cb7');
+                    // ignore: use_build_context_synchronously
+                    Flushbar(
+                      messageText: Text(
+                        "All images are deleted successfully",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Inter',
+                          fontSize: 20.sp,
+                        ),
+                      ),
+                      backgroundColor: Colors.green,
+                      duration: const Duration(seconds: 2),
+                    ).show(context);
+                  },
+                  child: Text(
+                    'reset all imgur images',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 25.sp,
+                      fontFamily: 'Inter',
+                    ),
                   ),
                 ),
               ),

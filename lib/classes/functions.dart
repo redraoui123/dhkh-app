@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dhkhapp/classes/Admin.dart';
+import 'package:dhkhapp/classes/FootbalMatch.dart';
 import 'package:dhkhapp/classes/photo.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
@@ -44,86 +45,34 @@ class Functions {
     return randomString;
   }
 
-  // upload profile picture of player
-  static Future<String> uploadProfilePicture(String bytes) async {
-    String photoId = "";
-    Photo photo = Photo(id: photoId, base64: bytes);
-    //upload image to Photos document
-    final docImages =
-        FirebaseFirestore.instance.collection('photos').doc(photo.id);
-
-    //set Photo
-    await docImages.set(photo.toMap());
-
-    return photo.id.toString();
-  }
-
+// upload image to imgur
   static Future<String> uploadImage(
       String imgPath, BuildContext context, String msg) async {
     String retrieved_link = "";
-    const clientID = 'eb38b2f37cf720c';
+    const clientID = '4b3921ad0dff3ca';
     final headers = {'Authorization': 'Client-ID $clientID'};
 
     final image = File(imgPath);
     final bytes = await image.readAsBytes();
     final base64Image = base64Encode(bytes);
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          child: Container(
-            alignment: Alignment.center,
-            height: 120.r,
-            decoration: BoxDecoration(
-              color: const Color(0xFF000B46),
-              border: Border.all(
-                color: Colors.white,
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Uploading $msg',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w100,
-                    fontFamily: 'Inter',
-                    fontSize: 20.sp,
-                  ),
-                ),
-                SizedBox(
-                  height: 20.r,
-                ),
-                const CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 1.2,
-                )
-              ],
-            ),
-          ),
-        );
-      },
-    );
+    // ignore: use_build_context_synchronously
+    _showMyDialog(context, msg);
+
     final response = await http.post(
       Uri.parse('https://api.imgur.com/3/image'),
       headers: headers,
       body: {'image': base64Image},
     );
-    Navigator.pop(context); // Dismiss the progress dialog
+    // ignore: use_build_context_synchronously
+    Navigator.pop(context);
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       final link = jsonResponse['data']['link'];
       retrieved_link = link;
-      print('Image link: $link');
+      debugPrint('Image link: $link');
     } else {
-      print('Failed to upload image: ${response.statusCode}');
+      debugPrint('Failed to upload image: ${response.statusCode}');
     }
 
     return retrieved_link;
@@ -141,6 +90,63 @@ class Functions {
   // upload Admin info
   static Future saveAdminInfo(
       {required Admin admin, required BuildContext context}) async {
+    _showMyDialog(context, 'Uploading Admin infos');
+
+    // Reference to document
+    final docPlayer =
+        FirebaseFirestore.instance.collection('admin').doc("admin");
+
+    await docPlayer.set(admin.toMap());
+
+    // ignore: use_build_context_synchronously
+    Navigator.pop(context);
+  }
+
+  // read Admin info
+  static Future<Admin?> getAdminInfo() async {
+    DocumentSnapshot<Map<String, dynamic>> adminSnapshot =
+        await FirebaseFirestore.instance.collection('admin').doc("admin").get();
+
+    if (adminSnapshot.exists) {
+      return Admin(
+        name: adminSnapshot.data()!['_name'],
+        phone: adminSnapshot.data()!['_phone'],
+        picture: adminSnapshot.data()!['_picture'],
+      );
+    } else {
+      return null;
+    }
+  }
+
+// upload Match
+  static Future createMatch(
+      {required FootbalMatch match, required BuildContext context}) async {
+    _showMyDialog(context, 'Creating Match');
+    // Reference to document
+    final docMatch =
+        FirebaseFirestore.instance.collection('match').doc('match');
+    Navigator.pop(context);
+    await docMatch.set(match.toMap());
+  }
+
+// read Match
+  static Future<FootbalMatch?> getMatch() async {
+    DocumentSnapshot<Map<String, dynamic>> adminSnapshot =
+        await FirebaseFirestore.instance.collection('match').doc("match").get();
+
+    if (adminSnapshot.exists) {
+      return FootbalMatch(
+        awayName: adminSnapshot.data()!['_awayName'],
+        awayScore: adminSnapshot.data()!['_awayScore'],
+        teamLogo: adminSnapshot.data()!['_teamLogo'],
+        video: adminSnapshot.data()!['_video'],
+      );
+    } else {
+      return null;
+    }
+  }
+
+  static _showMyDialog(BuildContext context, String message) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -163,7 +169,7 @@ class Functions {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Uploading Admin infos',
+                  'Uploading $message',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w100,
@@ -184,14 +190,50 @@ class Functions {
         );
       },
     );
+  }
 
-    // Reference to document
-    final docPlayer =
-        FirebaseFirestore.instance.collection('admin').doc("admin");
+// temporary function to delete all imgur uploaded images
+//-----------------------------------------------------------------------------------------//
+  static Future<void> deleteAllImages(String accessToken) async {
+    const url = 'https://api.imgur.com/3/account/me/images';
+    final headers = {'Authorization': 'Bearer $accessToken'};
 
-    await docPlayer.set(admin.toMap());
+    try {
+      // Retrieve all images uploaded by the user
+      final response = await http.get(Uri.parse(url), headers: headers);
+      final data = jsonDecode(response.body);
 
-    // ignore: use_build_context_synchronously
-    Navigator.pop(context);
+      if (data['success']) {
+        final images = data['data'];
+
+        // Delete each image one by one
+        for (final image in images) {
+          await deleteImage(accessToken, image['deletehash']);
+        }
+
+        print('All images deleted successfully');
+      } else {
+        throw Exception('Failed to retrieve images');
+      }
+    } catch (error) {
+      print('Error occurred while deleting images: $error');
+    }
+  }
+
+  static Future<void> deleteImage(String accessToken, String deleteHash) async {
+    final url = 'https://api.imgur.com/3/image/$deleteHash';
+    final headers = {'Authorization': 'Bearer $accessToken'};
+
+    try {
+      final response = await http.delete(Uri.parse(url), headers: headers);
+
+      if (response.statusCode == 200) {
+        print('Image deleted successfully');
+      } else {
+        throw Exception('Failed to delete image');
+      }
+    } catch (error) {
+      print('Error occurred while deleting image: $error');
+    }
   }
 }
